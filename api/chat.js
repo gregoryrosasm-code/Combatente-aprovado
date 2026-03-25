@@ -36,7 +36,7 @@ export default async function handler(req, res) {
   // Monta payload limpo para a Anthropic
   const payload = {
     model: 'claude-haiku-4-5-20251001',
-    max_tokens: 4000,
+    max_tokens: 8000,
     messages: body.messages || [{ role: 'user', content: body.prompt || '' }],
   };
 
