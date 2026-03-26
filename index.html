@@ -342,7 +342,7 @@ h1.logo span{color:var(--kh);}
   <div class="tb"><button class="bk" onclick="goTo('home')">← VOLTAR</button><span class="stitle">ROADMAP</span></div>
   <div class="pad">
     <div class="fg"><label>Concurso alvo</label>
-      <select id="rmcc"><option value="">Selecione...</option><option>Brigada Militar RS</option><option>Polícia Civil RS</option><option>Polícia Federal</option><option>Polícia Militar SP</option><option>PRF - Polícia Rodoviária Federal</option><option>Polícia Civil SC</option><option>Polícia Penal</option></select>
+      <select id="rmcc"><option value="">Selecione...</option><option>Brigada Militar RS</option><option>Polícia Civil RS</option><option>Polícia Federal</option><option>PRF - Polícia Rodoviária Federal</option><option>Polícia Civil SC</option><option>Polícia Penal</option><option>Polícia Militar SP</option></select>
     </div>
     <div class="fg"><label>Horas por dia</label>
       <select id="rmh"><option value="2">2h/dia</option><option value="4" selected>4h/dia</option><option value="6">6h/dia</option><option value="8">8h/dia</option></select>
@@ -508,7 +508,8 @@ function renderHotTopics(tema){
   const ht=HOT_TOPICS[tema];
   if(!ht){box.style.display='none';return;}
   box.style.display='block';
-  items.innerHTML=ht.map(h=>`<span class="ht-item">${h.t}<span class="ht-pct">${h.p}%</span></span>`).join('');
+  items.innerHTML=ht.map(h=>`<span class="ht-item">${h.t}<span class="ht-pct">${h.p}%</span></span>`).join('')+
+    `<div style="width:100%;margin-top:8px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:rgba(240,232,212,.25);letter-spacing:.5px;">base: análise de provas CESPE/VUNESP/FUNDATEC 2019–2025</div>`;
 }
 
 function renderHistorico(){
@@ -589,55 +590,12 @@ function initChips(){
 initChips();
 
 /* ════════════════════════════════════
-   API — via proxy seguro
+   API
    ════════════════════════════════════ */
-
-// Token do usuário pago (null = plano gratuito)
-// Após integrar pagamento, salve o token aqui via localStorage
-const USER_TOKEN = localStorage.getItem('ca_user_token') || null;
-
 async function ai(prompt){
-  const headers = {'Content-Type':'application/json'};
-  if(USER_TOKEN) headers['X-User-Token'] = USER_TOKEN;
-
-  const r = await fetch('/api/chat', {
-    method: 'POST',
-    headers,
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 1000,
-      messages: [{role:'user', content: prompt}]
-    })
-  });
-
-  const d = await r.json();
-
-  // Limite gratuito atingido
-  if(r.status === 429 && d.upgrade){
-    throw new Error('UPGRADE_REQUIRED');
-  }
-
-  if(!r.ok) throw new Error(d.error || 'Erro na API');
-
+  const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
+  const d=await r.json();
   return d.content[0].text;
-}
-
-// Mostra modal de upgrade quando limite gratuito é atingido
-function showUpgradeModal(){
-  const existing = document.getElementById('upgrade-modal');
-  if(existing) return;
-  const m = document.createElement('div');
-  m.id = 'upgrade-modal';
-  m.style.cssText = 'position:fixed;inset:0;z-index:999;background:rgba(13,15,10,.92);display:flex;align-items:center;justify-content:center;padding:20px;';
-  m.innerHTML = `
-    <div style="background:var(--cb);border:1px solid var(--bd2);max-width:380px;width:100%;padding:28px 24px;text-align:center;">
-      <div style="font-family:\'Bebas Neue\',sans-serif;font-size:13px;letter-spacing:2px;color:var(--kh3);margin-bottom:8px;">LIMITE DIÁRIO ATINGIDO</div>
-      <div style="font-family:\'Bebas Neue\',sans-serif;font-size:32px;color:var(--kh);letter-spacing:2px;margin-bottom:12px;">ASSINE O PRO</div>
-      <div style="font-size:13px;color:var(--cr3);line-height:1.7;margin-bottom:24px;">Você usou todas as questões gratuitas de hoje.<br>Com o plano Pro você tem acesso <strong style="color:var(--cr)">ilimitado</strong> a questões, simulados e mapas mentais.</div>
-      <button class="sbtn" style="width:100%;margin-bottom:10px" onclick="window.open('https://pay.kiwify.com.br/SEU-LINK-AQUI','_blank')">ASSINAR PRO — R$29/MÊS</button>
-      <button class="sbtn ghost" style="width:100%" onclick="document.getElementById(\'upgrade-modal\').remove()">FECHAR</button>
-    </div>`;
-  document.body.appendChild(m);
 }
 
 /* ════════════════════════════════════
@@ -669,13 +627,12 @@ Distribua bem os tópicos — não repita o mesmo artigo ou tema.
 
 Responda APENAS com JSON puro, sem markdown, sem texto fora:
 [{"q":"enunciado completo da questão","opts":["A) texto","B) texto","C) texto","D) texto"],"correct":0,"exp":"Gabarito: [letra]. [Explicação com base legal: art. X da Lei Y]","materia":"${tema}","subtema":"tópico específico","banca":"CESPE"}]
-correct = índice 0-3. IMPORTANTE: distribua os gabaritos de forma equilibrada entre A, B, C e D ao longo das questões — não concentre respostas na mesma letra.`);
+correct = índice 0-3.`);
     const clean=raw.replace(/```json|```/g,'').trim();
     qzQs=JSON.parse(clean);
     markUsed(qzQs);
   }catch(e){
     document.getElementById('qz-load').style.display='none';
-    if(e.message==='UPGRADE_REQUIRED'){showUpgradeModal();document.getElementById('qz-setup').style.display='block';return;}
     document.getElementById('qz-q').style.display='block';
     document.getElementById('qz-q').innerHTML='<div class="err">Erro ao carregar questões. Verifique sua conexão e tente novamente.</div><button class="sbtn ghost" style="margin-top:14px" onclick="resetQuiz()">VOLTAR</button>';
     return;
@@ -759,28 +716,207 @@ function resetQuiz(){
 }
 
 /* ════════════════════════════════════
+   BANCO DE EDITAIS REAIS
+   Fonte: editais oficiais e histórico de provas
+   ════════════════════════════════════ */
+const EDITAIS = {
+  'Brigada Militar RS': {
+    banca: 'FUNDATEC',
+    totalQuestoes: 50,
+    notaCorte: 60,
+    fonte: 'Edital SD-P 01/2025 — FUNDATEC/BM-RS',
+    materias: [
+      { nome: 'Língua Portuguesa', questoes: 8, peso: 16, topicos: ['Interpretação e compreensão de texto','Ortografia oficial','Acentuação gráfica','Pontuação','Concordância verbal e nominal','Regência verbal e nominal','Crase','Coesão e coerência textual'] },
+      { nome: 'Matemática', questoes: 7, peso: 14, topicos: ['Operações com números reais','Regra de três simples e composta','Porcentagem e juros','Razão e proporção','Sequências e progressões','Raciocínio lógico-matemático'] },
+      { nome: 'Informática', questoes: 6, peso: 12, topicos: ['Windows 10/11','Microsoft Office (Word, Excel, PowerPoint)','Internet e e-mail','Segurança da informação','Redes de computadores básico'] },
+      { nome: 'Constituição Federal', questoes: 7, peso: 14, topicos: ['Direitos e garantias fundamentais (art. 5º)','Segurança pública (art. 144)','Organização do Estado','Poder Executivo e Legislativo','Remédios constitucionais'] },
+      { nome: 'Direito Penal', questoes: 6, peso: 12, topicos: ['Tipicidade, ilicitude e culpabilidade','Crimes contra a pessoa (arts. 121-154)','Crimes contra o patrimônio','Tentativa e consumação','Penas e sua aplicação','Excludentes de ilicitude'] },
+      { nome: 'Processo Penal', questoes: 5, peso: 10, topicos: ['Inquérito policial','Prisão em flagrante','Ação penal pública e privada','Provas e sistemas probatórios','Habeas corpus'] },
+      { nome: 'Legislação Específica BM-RS', questoes: 6, peso: 12, topicos: ['LC 10.990, 10.992 e 10.993/1997 (Estatuto BM)','Regulamento Disciplinar da BM','Hierarquia e disciplina militar','Deveres e proibições do policial-militar','Regime disciplinar e punições','Art. 144 CF — segurança pública'] },
+      { nome: 'Conhecimentos Gerais', questoes: 5, peso: 10, topicos: ['Atualidades nacionais e regionais (RS)','Geografia do RS','História do RS','Meio ambiente e cidadania'] },
+    ],
+    dicas: 'Prova de 50 questões, 5 alternativas cada. Mínimo 60 pontos no total E 20% de acertos por disciplina. A FUNDATEC cobra bastante legislação específica da BM e atualidades do RS — não negligencie essas matérias.',
+  },
+  'Polícia Civil RS': {
+    banca: 'FUNDATEC / FAURGS (histórico)',
+    totalQuestoes: 80,
+    notaCorte: 60,
+    fonte: 'Histórico de editais PC-RS (base: últimos concursos realizados)',
+    materias: [
+      { nome: 'Língua Portuguesa', questoes: 10, peso: 12.5, topicos: ['Interpretação de texto','Redação oficial','Gramática normativa','Coesão e coerência','Variação linguística'] },
+      { nome: 'Direito Constitucional', questoes: 12, peso: 15, topicos: ['Direitos fundamentais (art. 5º)','Segurança pública (art. 144)','Organização dos Poderes','Remédios constitucionais','Controle de constitucionalidade'] },
+      { nome: 'Direito Penal', questoes: 14, peso: 17.5, topicos: ['Teoria do crime','Crimes em espécie (CP)','Penas e medidas de segurança','Extinção da punibilidade','Legislação penal especial (Lei de Drogas, Estatuto do Desarmamento)'] },
+      { nome: 'Processo Penal', questoes: 12, peso: 15, topicos: ['Inquérito policial','Ação penal','Prisões cautelares','Provas','Recursos e habeas corpus'] },
+      { nome: 'Direito Administrativo', questoes: 10, peso: 12.5, topicos: ['Atos administrativos','Poderes da administração','Servidores públicos','Licitações (Lei 14.133/21)','Improbidade administrativa'] },
+      { nome: 'Legislação Específica PC-RS', questoes: 8, peso: 10, topicos: ['Estatuto dos Funcionários Públicos do RS','Lei Orgânica da PC-RS','Atribuições do Delegado e Investigador','Regime disciplinar','Código de Ética Policial'] },
+      { nome: 'Informática', questoes: 7, peso: 8.75, topicos: ['Sistemas operacionais','Pacote Office','Internet e segurança','Noções de redes'] },
+      { nome: 'Raciocínio Lógico', questoes: 7, peso: 8.75, topicos: ['Lógica proposicional','Conjuntos','Sequências','Probabilidade e estatística básica'] },
+    ],
+    dicas: 'A PC-RS cobra fortemente Direito Penal e Processo Penal juntos — são ~33% da prova. Foque em crimes em espécie e prisões cautelares. Legislação específica da PC tem peso alto e muitos candidatos negligenciam.',
+  },
+  'Polícia Federal': {
+    banca: 'CEBRASPE',
+    totalQuestoes: 120,
+    notaCorte: 50,
+    fonte: 'Edital PF 2025 (Agente de Polícia Federal) — CEBRASPE',
+    materias: [
+      { nome: 'Língua Portuguesa', questoes: 20, peso: 16.7, topicos: ['Interpretação de textos','Coesão e coerência','Gramática: ortografia, acentuação, pontuação','Concordância, regência, crase','Redação oficial (Manual de Redação da PR)'] },
+      { nome: 'Raciocínio Lógico e Matemática', questoes: 20, peso: 16.7, topicos: ['Lógica proposicional','Raciocínio lógico-quantitativo','Noções de probabilidade','Sequências e séries','Geometria básica'] },
+      { nome: 'Direito Constitucional', questoes: 15, peso: 12.5, topicos: ['Direitos e garantias fundamentais','Organização político-administrativa','Poder Judiciário e MP','Controle de constitucionalidade','Segurança pública (art. 144)'] },
+      { nome: 'Direito Administrativo', questoes: 15, peso: 12.5, topicos: ['Princípios da administração','Atos e poderes administrativos','Licitações e contratos (Lei 14.133/21)','Servidores públicos federais (Lei 8.112/90)','Controle da administração'] },
+      { nome: 'Direito Penal', questoes: 15, peso: 12.5, topicos: ['Crimes previstos no CP','Lei de Drogas (Lei 11.343/06)','Crimes contra a administração pública','Lavagem de dinheiro (Lei 9.613/98)','Crimes de tortura e organização criminosa'] },
+      { nome: 'Direito Processual Penal', questoes: 15, peso: 12.5, topicos: ['Inquérito policial','Prisão e liberdade provisória','Ação penal e competência','Provas e nulidades','Lei 12.850/13 — organizações criminosas'] },
+      { nome: 'Legislação Especial', questoes: 10, peso: 8.3, topicos: ['Estatuto do Desarmamento (Lei 10.826/03)','Lei de Interceptações (Lei 9.296/96)','Lei de Identificação Criminal','Código de Trânsito (noções)','Direitos Humanos e cidadania'] },
+      { nome: 'Informática', questoes: 10, peso: 8.3, topicos: ['Sistemas operacionais Windows e Linux','Segurança da informação e criptografia','Redes de computadores','Forense digital básico','Pacote Office e nuvem'] },
+    ],
+    dicas: 'CEBRASPE usa "Certo ou Errado" — errar desconta ponto. Responda apenas o que tem certeza. A prova é altamente técnica. Legislação Especial e Forense Digital são diferenciais que poucos candidatos estudam bem.',
+  },
+  'PRF - Polícia Rodoviária Federal': {
+    banca: 'CEBRASPE',
+    totalQuestoes: 120,
+    notaCorte: 35,
+    fonte: 'Edital PRF 2021 (último realizado) — referência para 2026',
+    materias: [
+      { nome: 'Língua Portuguesa', questoes: 20, peso: 16.7, topicos: ['Interpretação e produção de textos','Gramática normativa','Coesão, coerência e argumentação','Figuras de linguagem','Redação oficial'] },
+      { nome: 'Raciocínio Lógico-Matemático', questoes: 20, peso: 16.7, topicos: ['Lógica proposicional e argumentativa','Estruturas lógicas','Raciocínio quantitativo','Probabilidade e estatística','Geometria e grandezas'] },
+      { nome: 'Legislação de Trânsito', questoes: 30, peso: 25, topicos: ['Código de Trânsito Brasileiro (CTB) completo','Infrações, penalidades e crimes de trânsito','Sinalização viária','Resoluções do CONTRAN','Sistema Nacional de Trânsito (art. 5º-24 CTB)','Medidas administrativas'] },
+      { nome: 'Direito Constitucional', questoes: 10, peso: 8.3, topicos: ['Direitos fundamentais (art. 5º)','Organização do Estado','Segurança pública (art. 144)','PRF — atribuições constitucionais'] },
+      { nome: 'Direito Administrativo', questoes: 10, peso: 8.3, topicos: ['Princípios da administração pública','Atos administrativos','Poderes da administração','Servidores públicos (Lei 8.112/90)','Controle e responsabilidade'] },
+      { nome: 'Direito Penal e Processual Penal', questoes: 10, peso: 8.3, topicos: ['Crimes de trânsito (arts. 291-312 CTB)','Crimes contra a administração pública','Inquérito policial','Prisão em flagrante','Ação penal e habeas corpus'] },
+      { nome: 'Física', questoes: 10, peso: 8.3, topicos: ['Cinemática (velocidade, aceleração)','Dinâmica e leis de Newton','Energia e trabalho','Óptica geométrica','Ondulatória básica'] },
+      { nome: 'Inglês ou Espanhol', questoes: 5, peso: 4.2, topicos: ['Interpretação de textos em língua estrangeira','Vocabulário técnico','Gramática básica aplicada'] },
+      { nome: 'Informática', questoes: 5, peso: 4.2, topicos: ['Pacote Office','Segurança e redes','Internet e e-mail','Conceitos básicos de hardware'] },
+    ],
+    dicas: 'Legislação de Trânsito é 25% da prova — é o grande diferencial. Quem domina o CTB sai na frente. Física é cobrada de forma aplicada ao trânsito (velocidade, frenagem). CEBRASPE desconta ponto por erro.',
+  },
+  'Polícia Civil SC': {
+    banca: 'FEPESE / IESES (histórico)',
+    totalQuestoes: 80,
+    notaCorte: 60,
+    fonte: 'Histórico de editais PC-SC (base: últimos concursos realizados)',
+    materias: [
+      { nome: 'Língua Portuguesa', questoes: 12, peso: 15, topicos: ['Interpretação de texto','Gramática e ortografia','Pontuação e acentuação','Concordância e regência','Redação oficial'] },
+      { nome: 'Direito Constitucional', questoes: 12, peso: 15, topicos: ['Direitos e garantias fundamentais','Organização do Estado (SC e Federal)','Segurança pública','Remédios constitucionais'] },
+      { nome: 'Direito Penal', questoes: 14, peso: 17.5, topicos: ['Teoria do crime e tipicidade','Crimes em espécie','Lei de Drogas (11.343/06)','Crimes hediondos (Lei 8.072/90)','Estatuto do Desarmamento'] },
+      { nome: 'Processo Penal', questoes: 12, peso: 15, topicos: ['Inquérito policial','Ação penal','Provas','Prisões e liberdade provisória','Recursos'] },
+      { nome: 'Direito Administrativo', questoes: 10, peso: 12.5, topicos: ['Princípios e poderes administrativos','Atos administrativos','Licitações','Servidores públicos SC','Improbidade administrativa'] },
+      { nome: 'Legislação Específica PC-SC', questoes: 10, peso: 12.5, topicos: ['Estatuto dos Servidores Públicos de SC','Lei Orgânica da PC-SC','Código de Ética da PC-SC','Atribuições do cargo'] },
+      { nome: 'Informática', questoes: 10, peso: 12.5, topicos: ['Sistemas operacionais','Pacote Office','Internet e segurança','Redes básico'] },
+    ],
+    dicas: 'Foco em Direito Penal e Processual Penal — respondem por 32% da prova juntos. A legislação específica de SC é muito cobrada e diferencia os aprovados. Estude o Estatuto dos Servidores de SC com atenção.',
+  },
+  'Polícia Penal': {
+    banca: 'IBADE / VUNESP / CESPE (varia por estado)',
+    totalQuestoes: 60,
+    notaCorte: 60,
+    fonte: 'Histórico de editais de Polícia Penal (base: SEAPEN/RS e outros estados)',
+    materias: [
+      { nome: 'Língua Portuguesa', questoes: 10, peso: 16.7, topicos: ['Interpretação de texto','Gramática normativa','Redação oficial','Coesão e coerência'] },
+      { nome: 'Direito Constitucional', questoes: 10, peso: 16.7, topicos: ['Direitos fundamentais (art. 5º)','Segurança pública (art. 144)','Organização do Estado'] },
+      { nome: 'Direito Penal', questoes: 10, peso: 16.7, topicos: ['Parte geral do CP','Crimes em espécie','Lei de Execução Penal (Lei 7.210/84)','Crimes hediondos','Tráfico de drogas'] },
+      { nome: 'Lei de Execução Penal (LEP)', questoes: 10, peso: 16.7, topicos: ['Classificação dos condenados','Direitos e deveres do preso','Disciplina e sanções','Trabalho e remição da pena','Progressão de regime','Monitoração eletrônica'] },
+      { nome: 'Direito Administrativo', questoes: 8, peso: 13.3, topicos: ['Princípios da administração','Atos administrativos','Servidores públicos','Poderes administrativos'] },
+      { nome: 'Legislação Específica', questoes: 7, peso: 11.7, topicos: ['Regulamento penitenciário estadual','Estatuto do servidor','Código de Ética do Agente Penal','Direitos Humanos aplicados ao sistema prisional','Convenção da ONU contra tortura'] },
+      { nome: 'Informática', questoes: 5, peso: 8.3, topicos: ['Pacote Office básico','Internet e segurança','Sistemas operacionais'] },
+    ],
+    dicas: 'A Lei de Execução Penal (LEP) é o grande diferencial da Polícia Penal — é matéria exclusiva deste cargo. Quem estuda a LEP bem já parte na frente de todos os outros candidatos. Foque nos direitos e deveres do preso e nos regimes de cumprimento.',
+  },
+  'Polícia Militar SP': {
+    banca: 'VUNESP',
+    totalQuestoes: 80,
+    notaCorte: 60,
+    fonte: 'Histórico de editais PM-SP (base: últimos concursos realizados)',
+    materias: [
+      { nome: 'Língua Portuguesa', questoes: 12, peso: 15, topicos: ['Interpretação de texto','Gramática','Ortografia e acentuação','Pontuação','Figuras de linguagem'] },
+      { nome: 'Matemática', questoes: 10, peso: 12.5, topicos: ['Aritmética e álgebra básica','Geometria plana','Porcentagem e juros','Raciocínio lógico-matemático','Probabilidade'] },
+      { nome: 'Atualidades e Cidadania', questoes: 8, peso: 10, topicos: ['Atualidades nacionais e estaduais SP','Direitos e deveres do cidadão','Estatuto da Criança e do Adolescente','Direitos Humanos'] },
+      { nome: 'Direito Constitucional', questoes: 12, peso: 15, topicos: ['Direitos fundamentais','Organização do Estado','Segurança pública (art. 144)','Poder Executivo SP'] },
+      { nome: 'Direito Penal e Processo Penal', questoes: 14, peso: 17.5, topicos: ['Crimes em espécie','Teoria do crime','Inquérito policial','Prisão em flagrante','Ação penal'] },
+      { nome: 'Legislação PM-SP', questoes: 12, peso: 15, topicos: ['Estatuto dos Policiais-Militares do Estado de SP','Regulamento Disciplinar PM-SP','Código PM Estadual','Direitos e deveres do PM'] },
+      { nome: 'Informática', questoes: 6, peso: 7.5, topicos: ['Windows','Pacote Office','Internet e segurança','Redes básico'] },
+      { nome: 'Inglês', questoes: 6, peso: 7.5, topicos: ['Interpretação de textos','Vocabulário básico','Gramática aplicada'] },
+    ],
+    dicas: 'A VUNESP cobra bastante interpretação de texto — treine muito isso. Legislação específica da PM-SP tem peso alto (15%) e é onde candidatos locais levam vantagem sobre os de outros estados.',
+  },
+};
+
+/* ════════════════════════════════════
    ROADMAP
    ════════════════════════════════════ */
 async function gerarRoadmap(){
   const cc=document.getElementById('rmcc').value;
   if(!cc){alert('Selecione um concurso!');return;}
   const h=document.getElementById('rmh').value,p=document.getElementById('rmp').value;
+  const edital=EDITAIS[cc];
+
   document.getElementById('rm-load').style.display='flex';
   document.getElementById('rm-res').innerHTML='';
+
+  // Monta contexto real do edital para a IA
+  const editalCtx = edital ? `
+DADOS REAIS DO EDITAL — ${cc} (${edital.fonte}):
+Banca: ${edital.banca} | Total de questões: ${edital.totalQuestoes} | Nota de corte: ${edital.notaCorte}%
+Distribuição oficial das matérias:
+${edital.materias.map(m=>`- ${m.nome}: ${m.questoes} questões (${m.peso.toFixed(1)}% da prova) | Tópicos: ${m.topicos.join(', ')}`).join('\n')}
+Dica estratégica: ${edital.dicas}
+` : `Concurso: ${cc}`;
+
   try{
-    const raw=await ai(`Especialista em concursos policiais. Crie cronograma de estudos para ${cc}, ${h}h/dia, prazo: ${p}.
-Baseie-se nas matérias e pesos reais do edital desse concurso. Inclua revisão e questões nos fins de semana.
-Responda APENAS com JSON puro, sem markdown:
-[{"week":"Semana 1","focus":"foco principal","days":[{"day":"SEG","tasks":"tarefa detalhada"},{"day":"TER","tasks":"..."},{"day":"QUA","tasks":"..."},{"day":"QUI","tasks":"..."},{"day":"SEX","tasks":"..."},{"day":"SAB","tasks":"revisão + questões"},{"day":"DOM","tasks":"revisão leve ou descanso"}]}]
+    const raw=await ai(`Você é especialista em concursos policiais. Crie um cronograma de estudos REALISTA e DETALHADO.
+
+${editalCtx}
+
+CONFIGURAÇÃO DO CANDIDATO: ${h}h de estudo por dia | Prazo: ${p}
+
+REGRAS DO CRONOGRAMA:
+- Distribua as matérias PROPORCIONALMENTE ao peso real no edital
+- Matérias com mais questões devem ter mais tempo de estudo
+- Inclua revisão espaçada (voltar em matérias já estudadas)
+- Inclua resolução de questões práticas toda semana
+- Sábado: revisão da semana + questões
+- Domingo: descanso ou revisão leve
+- Seja específico: indique o TÓPICO exato a estudar em cada dia, não apenas a matéria
+- Nas últimas semanas: priorizar pontos fracos e simulados
+
+Responda APENAS com JSON puro, sem markdown, sem texto fora:
+[{"week":"Semana 1","focus":"foco estratégico desta semana","days":[{"day":"SEG","tasks":"tarefa detalhada com tópico específico"},{"day":"TER","tasks":"..."},{"day":"QUA","tasks":"..."},{"day":"QUI","tasks":"..."},{"day":"SEX","tasks":"..."},{"day":"SAB","tasks":"revisão + X questões de Y"},{"day":"DOM","tasks":"revisão leve ou descanso"}]}]
 Gere 4 semanas representativas da progressão.`);
     const clean=raw.replace(/```json|```/g,'').trim();
-    renderRM(JSON.parse(clean));
-  }catch(e){document.getElementById('rm-res').innerHTML=e.message==='UPGRADE_REQUIRED'?'':'<div class="err">Erro ao gerar roadmap.</div>';if(e.message==='UPGRADE_REQUIRED')showUpgradeModal();}
+    renderRM(JSON.parse(clean), edital);
+  }catch(e){
+    if(e.message==='UPGRADE_REQUIRED'){showUpgradeModal();}
+    else{document.getElementById('rm-res').innerHTML='<div class="err">Erro ao gerar roadmap.</div>';}
+  }
   document.getElementById('rm-load').style.display='none';
 }
 
-function renderRM(ws){
-  document.getElementById('rm-res').innerHTML='<div style="margin-top:22px">'+ws.map(w=>`
+function renderRM(ws, edital){
+  let editalHtml = '';
+  if(edital){
+    editalHtml = `
+    <div style="background:var(--ol2);border:1px solid var(--ol3);padding:14px 16px;margin-bottom:20px;">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--ol4);letter-spacing:2px;margin-bottom:10px;">// EDITAL OFICIAL — ${edital.fonte}</div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--kh3);margin-bottom:12px;">Banca: ${edital.banca} &nbsp;|&nbsp; ${edital.totalQuestoes} questões &nbsp;|&nbsp; Nota de corte: ${edital.notaCorte}%</div>
+      <div style="display:flex;flex-direction:column;gap:5px;">
+        ${edital.materias.map(m=>{
+          const pct=m.peso;
+          const col=pct>=15?'var(--kh)':pct>=10?'var(--ol4)':'var(--cr3)';
+          return `<div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-size:11px;color:var(--cr2);min-width:160px;flex-shrink:0;">${m.nome}</span>
+            <div style="flex:1;height:5px;background:var(--bd);border-radius:0;">
+              <div style="width:${Math.min(pct*4,100)}%;height:100%;background:${col};transition:width .6s;"></div>
+            </div>
+            <span style="font-family:'Bebas Neue',sans-serif;font-size:14px;color:${col};min-width:50px;text-align:right;">${m.questoes}Q (${pct.toFixed(0)}%)</span>
+          </div>`;
+        }).join('')}
+      </div>
+      <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--bd);font-size:11px;color:var(--kh3);font-family:'IBM Plex Mono',monospace;line-height:1.6;">
+        ⚡ ${edital.dicas}
+      </div>
+    </div>`;
+  }
+
+  document.getElementById('rm-res').innerHTML = editalHtml + '<div style="margin-top:22px">'+ws.map(w=>`
     <div class="wk">
       <div class="wkh"><span class="wkh-title">${w.week}</span><span class="wkh-focus">${w.focus}</span></div>
       <div class="wkb">${w.days.map(d=>`<div class="dr"><span class="dl">${d.day}</span><span class="dt">${d.tasks}</span></div>`).join('')}</div>
@@ -793,20 +929,63 @@ function renderRM(ws){
 async function gerarMapa(){
   document.getElementById('mp-load').style.display='flex';
   document.getElementById('mp-res').innerHTML='';
+
+  // Busca o concurso selecionado para contextualizar com edital real
+  const ccEl = document.getElementById('rmcc');
+  const cc = ccEl ? ccEl.value : '';
+  const edital = EDITAIS[cc];
+  const matEdital = edital ? edital.materias.find(m=>m.nome===mpTema||m.nome.includes(mpTema.split(' ')[0])) : null;
+
+  const editalCtx = matEdital ? `
+Tópicos obrigatórios segundo o edital oficial (${edital.fonte}):
+${matEdital.topicos.map(t=>`- ${t}`).join('\n')}
+Esta matéria tem ${matEdital.questoes} questões na prova (${matEdital.peso.toFixed(0)}% do total).
+` : '';
+
   try{
-    const raw=await ai(`Professor de concursos policiais. Mapa mental completo de "${mpTema}" para Polícia/Brigada Militar.
-Cubra os pontos mais cobrados. Inclua artigos e referências legais específicas nos items.
+    const raw=await ai(`Você é professor especialista em concursos policiais brasileiros.
+Crie um mapa mental COMPLETO e TECNICAMENTE PRECISO sobre "${mpTema}" para concursos policiais.
+
+${editalCtx}
+
+REGRAS:
+- Inclua artigos de lei específicos (ex: "Art. 312 CP — peculato")
+- Mencione entendimentos do STF/STJ quando relevante
+- Destaque o que mais cai nas provas com "(⚡ muito cobrado)"
+- Seja tecnicamente correto — nada pode estar errado juridicamente
+- Organize por subtemas lógicos
+- Use linguagem concisa mas completa
+
 Responda APENAS com JSON puro:
 {"root":"${mpTema}","branches":[{"title":"subtema","items":["art. X — conceito cobrado","ponto doutrinário importante","..."]}]}
 6 branches, 5-7 items cada.`);
     const clean=raw.replace(/```json|```/g,'').trim();
-    renderMP(JSON.parse(clean));
-  }catch(e){document.getElementById('mp-res').innerHTML=e.message==='UPGRADE_REQUIRED'?'':'<div class="err">Erro. Tente novamente.</div>';if(e.message==='UPGRADE_REQUIRED')showUpgradeModal();}
+    renderMP(JSON.parse(clean), matEdital);
+  }catch(e){
+    document.getElementById('mp-res').innerHTML=e.message==='UPGRADE_REQUIRED'?'':'<div class="err">Erro. Tente novamente.</div>';
+    if(e.message==='UPGRADE_REQUIRED')showUpgradeModal();
+  }
   document.getElementById('mp-load').style.display='none';
 }
 
-function renderMP(m){
+function renderMP(m, matEdital){
+  const editalBadge = matEdital ? `
+    <div style="background:var(--ol2);border:1px solid var(--ol);padding:8px 14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--ol4);letter-spacing:1px;">PESO NO EDITAL</span>
+        <span style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--kh);">${matEdital.questoes} QUESTÕES (${matEdital.peso.toFixed(0)}%)</span>
+      </div>
+    </div>` : '';
+
+  const fonteCtx = matEdital ? `` : '';
+  const ccEl = document.getElementById('rmcc');
+  const cc = ccEl ? ccEl.value : '';
+  const edital = EDITAIS[cc];
+  const fonteTag = edital ? `<div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:rgba(240,232,212,.25);letter-spacing:.5px;margin-bottom:14px;">Fonte: ${edital.fonte} • Gerado por IA com base no conteúdo programático oficial</div>` : `<div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:rgba(240,232,212,.25);letter-spacing:.5px;margin-bottom:14px;">Gerado por IA com base em provas e editais de concursos policiais</div>`;
+
   document.getElementById('mp-res').innerHTML=`<div style="margin-top:22px">
+    ${editalBadge}
+    ${fonteTag}
     <div class="root-node">${m.root}</div>
     <div class="brs">${m.branches.map((b,i)=>`
       <div class="br${i===0?' op':''}" id="br${i}">
@@ -850,7 +1029,6 @@ Responda APENAS com JSON puro:
   }catch(e){
     document.getElementById('sim-load').style.display='none';
     document.getElementById('sim-setup').style.display='block';
-    if(e.message==='UPGRADE_REQUIRED'){showUpgradeModal();return;}
     alert('Erro ao gerar simulado. Tente novamente.');return;
   }
   document.getElementById('sim-load').style.display='none';
@@ -930,5 +1108,11 @@ function resetSim(){
 // INIT
 updateHomeStats();
 </script>
+
+<!-- RODAPÉ DISCRETO -->
+<div style="position:fixed;bottom:0;left:0;right:0;z-index:0;pointer-events:none;padding:6px 16px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(201,184,106,.06);">
+  <span style="font-family:'IBM Plex Mono',monospace;font-size:8px;color:rgba(240,232,212,.18);letter-spacing:.5px;">COMBATENTE APROVADO</span>
+  <span style="font-family:'IBM Plex Mono',monospace;font-size:8px;color:rgba(240,232,212,.18);letter-spacing:.5px;">Conteúdo baseado em editais oficiais • Atualizado 2025</span>
+</div>
 </body>
 </html>
