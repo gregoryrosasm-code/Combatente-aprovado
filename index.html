@@ -669,7 +669,7 @@ Distribua bem os tópicos — não repita o mesmo artigo ou tema.
 
 Responda APENAS com JSON puro, sem markdown, sem texto fora:
 [{"q":"enunciado completo da questão","opts":["A) texto","B) texto","C) texto","D) texto"],"correct":0,"exp":"Gabarito: [letra]. [Explicação com base legal: art. X da Lei Y]","materia":"${tema}","subtema":"tópico específico","banca":"CESPE"}]
-correct = índice 0-3.`);
+correct = índice 0-3. IMPORTANTE: distribua os gabaritos de forma equilibrada entre A, B, C e D ao longo das questões — não concentre respostas na mesma letra.`);
     const clean=raw.replace(/```json|```/g,'').trim();
     qzQs=JSON.parse(clean);
     markUsed(qzQs);
