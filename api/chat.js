@@ -9,13 +9,11 @@ export default async function handler(req, res) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return res.status(500).json({ error: 'Chave de API não configurada.' });
 
-  // Parse do body (garante que é objeto mesmo se chegar como string)
   let body = req.body;
   if (typeof body === 'string') {
     try { body = JSON.parse(body); } catch { return res.status(400).json({ error: 'JSON inválido' }); }
   }
 
-  // Rate limiting simples por IP (15 chamadas gratuitas/dia)
   const userToken = req.headers['x-user-token'] || null;
   const isPaid = userToken && userToken === process.env.PAID_SECRET;
 
@@ -33,13 +31,6 @@ export default async function handler(req, res) {
     }
   }
 
-  // Monta payload limpo para a Anthropic
-  const payload = {
-    model: 'claude-haiku-4-5-20251001',
-    max_tokens: 8000,
-    messages: body.messages || [{ role: 'user', content: body.prompt || '' }],
-  };
-
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -48,7 +39,11 @@ export default async function handler(req, res) {
         'x-api-key': apiKey,
         'anthropic-version': '2023-06-01',
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 8000,
+        messages: body.messages || [{ role: 'user', content: body.prompt || '' }],
+      }),
     });
 
     const data = await response.json();
