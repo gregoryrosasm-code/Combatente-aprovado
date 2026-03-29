@@ -1,7 +1,9 @@
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  const origin = req.headers.origin || '';
+  const allowed = origin.includes('combatente-aprovado.vercel.app') || origin.includes('localhost');
+  res.setHeader('Access-Control-Allow-Origin', allowed ? origin : '');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-User-Token');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Método não permitido' });
@@ -14,21 +16,17 @@ export default async function handler(req, res) {
     try { body = JSON.parse(body); } catch { return res.status(400).json({ error: 'JSON inválido' }); }
   }
 
-  const userToken = req.headers['x-user-token'] || null;
-  const isPaid = userToken && userToken === process.env.PAID_SECRET;
-
-  if (!isPaid) {
-    const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';
-    const now = Date.now();
-    const dayMs = 24 * 60 * 60 * 1000;
-    if (!global._rl) global._rl = {};
-    const e = global._rl[ip];
-    if (e && now - e.t < dayMs) {
-      if (e.n >= 15) return res.status(429).json({ error: 'Limite gratuito atingido', upgrade: true });
-      e.n++;
-    } else {
-      global._rl[ip] = { t: now, n: 1 };
-    }
+  // Rate limiting por IP
+  const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';
+  const now = Date.now();
+  const dayMs = 24 * 60 * 60 * 1000;
+  if (!global._rl) global._rl = {};
+  const e = global._rl[ip];
+  if (e && now - e.t < dayMs) {
+    if (e.n >= 15) return res.status(429).json({ error: 'Limite diário atingido. Tente novamente amanhã.' });
+    e.n++;
+  } else {
+    global._rl[ip] = { t: now, n: 1 };
   }
 
   try {
@@ -40,7 +38,7 @@ export default async function handler(req, res) {
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
+        model: 'claude-sonnet-4-20250514',
         max_tokens: 8000,
         messages: body.messages || [{ role: 'user', content: body.prompt || '' }],
       }),
