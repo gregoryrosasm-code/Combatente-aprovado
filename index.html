@@ -568,6 +568,14 @@ function renderHistorico(){
 /* ═══════════════════════════════════════
    NAVIGATION
 ═══════════════════════════════════════ */
+function switchTab(tab){
+  ['praticar','estudar','progresso'].forEach(function(t){
+    var el=document.getElementById('tab-'+t);
+    var btn=document.getElementById('navt-'+t);
+    if(el)el.style.display=t===tab?'block':'none';
+    if(btn){btn.classList.remove('active');if(t===tab)btn.classList.add('active');}
+  });
+}  
 function goTo(s){
   document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
   document.getElementById(s).classList.add('active');
