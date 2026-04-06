@@ -579,6 +579,7 @@ function switchTab(tab){
 function goTo(s){
   document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
   document.getElementById(s).classList.add('active');
+  var nav=document.getElementById('nav-bar');if(nav)nav.style.display=s==='home'?'flex':'none';
   if(s==='home')updateHomeStats();
   if(s==='quiz'){updateQuizHeader();renderHotTopics(null);}
   if(s==='historico')renderHistorico();
