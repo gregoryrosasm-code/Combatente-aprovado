@@ -658,9 +658,8 @@ function goTo(s){
   if(s==='home')updateHomeStats();
   if(s==='quiz'){updateQuizHeader();renderHotTopics(null);}
   if(s==='historico')renderHistorico();
-  if(s==='cronograma')loadCronSalvo();
+  if(s==='cronograma')loadCronSalvo(); 
 }
-
 /* ═══════════════════════════════════════
    CHIPS INIT
 ═══════════════════════════════════════ */
@@ -989,7 +988,88 @@ async function gerarCronograma(){
   renderCronDia();
   document.getElementById('cron-content').style.display='block';
 }
+function loadCronSalvo(){
+  var cs = getCronStorage();
+  if(cs.dias && cs.dias.length){
+    cronDias = cs.dias;
+    cronIdx = 0;
+    renderCronDia();
+    document.getElementById('cron-setup').style.display = 'none';
+    document.getElementById('cron-content').style.display = 'block';
+  }
+}
 
+function cronNav(dir){
+  var newIdx = cronIdx + dir;
+  if(newIdx < 0) return;
+  if(newIdx >= cronDias.length){
+    alert('Último dia do cronograma.');
+    return;
+  }
+  cronIdx = newIdx;
+  renderCronDia();
+}
+
+function toggleCronDia(){
+  var cs = getCronStorage();
+  var checked = document.getElementById('cron-check').checked;
+  if(!cs.concluidos) cs.concluidos = {};
+  cs.concluidos[cronIdx] = checked;
+  saveCronStorage(cs);
+  var bg = document.getElementById('cron-toggle-bg');
+  var dot = document.getElementById('cron-toggle-dot');
+  if(checked){
+    bg.classList.add('cron-toggle-on');
+    dot.classList.add('cron-toggle-dot-on');
+  } else {
+    bg.classList.remove('cron-toggle-on');
+    dot.classList.remove('cron-toggle-dot-on');
+  }
+  renderCronProgresso();
+}
+
+function renderCronProgresso(){
+  if(!cronDias.length) return;
+  var cs = getCronStorage();
+  var total = cronDias.length;
+  var feitos = 0;
+  for(var i = 0; i < total; i++){
+    if(cs.concluidos && cs.concluidos[i]) feitos++;
+  }
+  var pct = Math.round(feitos / total * 100);
+  document.getElementById('cron-progresso').innerHTML =
+    '<div class="section-label">PROGRESSO</div>' +
+    '<div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">' +
+    '<div style="flex:1"><div class="cron-prog-bar"><div class="cron-prog-fill" style="width:'+pct+'%"></div></div></div>' +
+    '<span style="font-family:Bebas Neue,sans-serif;font-size:22px;color:var(--kh)">'+pct+'%</span></div>' +
+    '<div style="font-family:IBM Plex Mono,monospace;font-size:10px;color:var(--cr3)">'+feitos+' de '+total+' dias concluídos</div>';
+}
+
+function gerarPdfDia(){
+  if(!cronDias.length){alert('Gere um cronograma primeiro!');return;}
+  var dia = cronDias[cronIdx];
+  var win = window.open('','_blank');
+  win.document.write('<html><head><meta charset="UTF-8"><title>'+(dia.titulo||(cronIdx+1)+'o Dia')+'</title></head><body style="font-family:Arial;padding:40px;max-width:700px;margin:0 auto">');
+  win.document.write('<h1>'+(dia.titulo||(cronIdx+1)+'o Dia')+'</h1>');
+  win.document.write('<pre>'+JSON.stringify(dia,null,2)+'</pre>');
+  win.document.write('</body></html>');
+  win.document.close();
+  win.print();
+}
+
+function gerarPdfCompleto(){
+  if(!cronDias.length){alert('Gere um cronograma primeiro!');return;}
+  var win = window.open('','_blank');
+  win.document.write('<html><head><meta charset="UTF-8"><title>Cronograma Completo</title></head><body style="font-family:Arial;padding:40px;max-width:700px;margin:0 auto">');
+  win.document.write('<h1>Cronograma — '+cronDias.length+' dias</h1>');
+  cronDias.forEach(function(dia,i){
+    win.document.write('<h2>'+(dia.titulo||(i+1)+'o Dia')+'</h2>');
+    win.document.write('<pre>'+JSON.stringify(dia,null,2)+'</pre><hr>');
+  });
+  win.document.write('</body></html>');
+  win.document.close();
+  win.print();
+}
 function renderCronDia(){
   if(!cronDias.length)return;
   var dia=cronDias[cronIdx];
