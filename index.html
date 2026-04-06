@@ -949,7 +949,81 @@ function finishSim(){
   document.getElementById('sim-res').innerHTML=`<div class="score-wrap"><div class="score-verdict" style="color:${ok?'#8ef5b4':'#f5a0a0'}">${ok?'APROVADO':'REPROVADO'}</div><div class="score-num">${pct}%</div><div class="score-sub">${c} DE ${tot} — NOTA DE CORTE: 60%</div><div style="margin:20px 0"><div class="section-label">DESEMPENHO POR MATÉRIA</div><div class="score-breakdown">${bkd}</div></div><div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><button class="sbtn" onclick="resetSim()">NOVO SIMULADO</button><button class="sbtn ghost" onclick="goTo('historico')">VER HISTÓRICO</button></div></div>`;
 }
 function resetSim(){document.getElementById('sim-res').style.display='none';document.getElementById('sim-setup').style.display='block';}
+/* ═══════════════════════════════════════
+   CRONOGRAMA DIÁRIO
+═══════════════════════════════════════ */
+var cronDias=[],cronIdx=0;
+function getCronStorage(){
+  try{return JSON.parse(localStorage.getItem('ca_cron')||'null')||{dias:[],concluidos:{},concurso:''};}
+  catch(e){return{dias:[],concluidos:{},concurso:''};}
+}
+function saveCronStorage(d){try{localStorage.setItem('ca_cron',JSON.stringify(d));}catch(e){}}
 
+async function gerarCronograma(){
+  var cc=document.getElementById('croncc').value;
+  if(!cc){alert('Selecione um concurso!');return;}
+  var horas=document.getElementById('cronh').value;
+  var totalDias=parseInt(document.getElementById('cronp').value);
+  var edital=EDITAIS[cc];
+  document.getElementById('cron-setup').style.display='none';
+  document.getElementById('cron-load').style.display='flex';
+  var editalCtx=edital?'Edital: '+cc+' ('+edital.fonte+')\nBanca: '+edital.banca+'\nMatérias e pesos:\n'+edital.materias.map(function(m){return '- '+m.nome+': '+m.questoes+'q ('+m.peso+'%) — '+m.topicos.slice(0,4).join(', ');}).join('\n'):'Concurso: '+cc;
+  try{
+    var diasPedir=Math.min(totalDias,7);
+    var raw=await ai('Especialista em concursos policiais. Crie um cronograma de estudos DETALHADO dia a dia.\n'+editalCtx+'\nHoras disponíveis: '+horas+'h/dia\nTotal de dias do plano: '+totalDias+'\nGere os primeiros '+diasPedir+' dias agora.\n\nPara CADA dia, inclua:\n- titulo: "1º Dia", "2º Dia", etc\n- materia: matéria principal do dia\n- metas: lista de metas específicas (ex: "Constituição Federal - Arts. 1º a 5º")\n- topicos: lista de tópicos para estudar\n- atividades: lista de atividades (ex: "Ler artigos", "Resolver 10 questões", "Revisar flashcards")\n- resumo: resumo breve do conteúdo principal (2-3 parágrafos com os pontos-chave)\n\nDistribua matérias proporcionalmente ao peso no edital.\nJSON puro:\n[{"titulo":"1º Dia","materia":"...","metas":["..."],"topicos":["..."],"atividades":["..."],"resumo":"..."}]');
+    cronDias=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    var cs=getCronStorage();
+    cs.dias=cronDias;cs.concurso=cc;cs.totalDias=totalDias;cs.horas=horas;
+    saveCronStorage(cs);
+  }catch(e){
+    document.getElementById('cron-load').style.display='none';
+    document.getElementById('cron-setup').style.display='block';
+    if(e.message==='UPGRADE_REQUIRED')showUpgradeModal();
+    else alert('Erro ao gerar cronograma. Tente novamente.');
+    return;
+  }
+  document.getElementById('cron-load').style.display='none';
+  cronIdx=0;
+  renderCronDia();
+  document.getElementById('cron-content').style.display='block';
+}
+
+function renderCronDia(){
+  if(!cronDias.length)return;
+  var dia=cronDias[cronIdx];
+  document.getElementById('cron-dia-label').textContent=dia.titulo||((cronIdx+1)+'º DIA');
+  document.getElementById('cron-prev').style.visibility=cronIdx>0?'visible':'hidden';
+  document.getElementById('cron-next').textContent=cronIdx<cronDias.length-1?'Próximo →':'Carregar mais →';
+  var cs=getCronStorage();
+  var done=cs.concluidos&&cs.concluidos[cronIdx];
+  document.getElementById('cron-check').checked=!!done;
+  var bg=document.getElementById('cron-toggle-bg');
+  var dot=document.getElementById('cron-toggle-dot');
+  if(done){bg.classList.add('cron-toggle-on');dot.classList.add('cron-toggle-dot-on');}
+  else{bg.classList.remove('cron-toggle-on');dot.classList.remove('cron-toggle-dot-on');}
+  var metasHtml='<div style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;letter-spacing:2px;color:var(--kh3);margin-bottom:10px;">METAS DO DIA</div>';
+  if(dia.materia)metasHtml+='<div style="font-size:13px;font-weight:500;color:var(--kh);margin-bottom:8px;">'+dia.materia+'</div>';
+  if(dia.metas&&dia.metas.length){metasHtml+=dia.metas.map(function(m){return '<div class="cron-topico">'+m+'</div>';}).join('');}
+  metasHtml+='<div style="margin-top:12px;font-family:\'IBM Plex Mono\',monospace;font-size:10px;letter-spacing:2px;color:var(--kh3);margin-bottom:8px;">ATIVIDADES</div>';
+  if(dia.atividades&&dia.atividades.length){metasHtml+=dia.atividades.map(function(a){return '<div style="font-size:12px;color:var(--cr2);padding:4px 0 4px 14px;position:relative;line-height:1.55;"><span style="position:absolute;left:0;color:var(--ol4);font-size:9px;top:6px;">•</span>'+a+'</div>';}).join('');}
+  document.getElementById('cron-metas').innerHTML=metasHtml;
+  if(done)document.getElementById('cron-metas').classList.add('cron-dia-done');
+  else document.getElementById('cron-metas').classList.remove('cron-dia-done');
+  var matHtml='';
+  if(dia.resumo){
+    matHtml+='<div class="cron-mat-card"><div style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;letter-spacing:2px;color:var(--kh3);margin-bottom:8px;">📄 RESUMO DO CONTEÚDO</div><div style="font-size:12px;color:var(--cr2);line-height:1.7;">'+dia.resumo.replace(/\n/g,'<br>')+'</div></div>';
+  }
+  if(dia.topicos&&dia.topicos.length){
+    matHtml+='<div class="cron-mat-card"><div style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;letter-spacing:2px;color:var(--kh3);margin-bottom:8px;">📚 TÓPICOS</div>';
+    matHtml+=dia.topicos.map(function(t){return '<div class="cron-topico">'+t+'</div>';}).join('')+'</div>';
+  }
+  document.getElementById('cron-materiais').innerHTML=matHtml;
+  var totalDias=cronDias.length;
+  var concluidos=Object.keys(cs.concluidos||{}).length;
+  var pct=Math.round(concluidos/totalDias*100);
+  document.getElementById('cron-progresso').innerHTML='<div style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;letter-spacing:2px;color:var(--kh3);margin-bottom:6px;">PROGRESSO: '+concluidos+'/'+totalDias+' DIAS ('+pct+'%)</div><div class="cron-prog-bar"><div class="cron-prog-fill" style="width:'+pct+'%"></div></div>';
+  document.getElementById('cron-streak-tb').textContent=concluidos>0?concluidos+' ✅':'';
+}
 /* ═══════════════════════════════════════
    FIXAÇÃO POR MATERIAL
    FIX: usa /api/chat consistente com os outros módulos
