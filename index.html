@@ -364,7 +364,70 @@ h1.logo span{color:var(--kh);}
     <div id="mp-res"></div>
   </div>
 </div>
-
+<!-- CRONOGRAMA DIÁRIO -->
+<div id="cronograma" class="screen">
+  <div class="tb">
+    <button class="bk" onclick="goTo('home')">← VOLTAR</button>
+    <span class="stitle">CRONOGRAMA DIÁRIO</span>
+    <div class="tb-right"><span class="tb-streak" id="cron-streak-tb"></span></div>
+  </div>
+  <div class="pad">
+    <div id="cron-setup">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--kh3);letter-spacing:1px;margin-bottom:14px;line-height:1.7;">
+        Gere um plano de estudos dia a dia personalizado pelo edital do seu concurso. Cada dia terá metas, artigos para ler e material de apoio.
+      </div>
+      <div class="fg"><label>Concurso</label>
+        <select id="croncc">
+          <option value="">Selecione...</option>
+          <option>Brigada Militar RS</option><option>Polícia Civil RS</option>
+          <option>Polícia Federal</option><option>PRF - Polícia Rodoviária Federal</option>
+          <option>Polícia Civil SC</option><option>Polícia Penal</option>
+          <option>Polícia Militar SP</option>
+        </select>
+      </div>
+      <div class="fg"><label>Horas por dia</label>
+        <select id="cronh">
+          <option value="1">1h/dia</option><option value="2">2h/dia</option>
+          <option value="4" selected>4h/dia</option><option value="6">6h/dia</option>
+          <option value="8">8h/dia</option>
+        </select>
+      </div>
+      <div class="fg"><label>Duração do plano</label>
+        <select id="cronp">
+          <option value="7">1 semana (7 dias)</option>
+          <option value="14">2 semanas (14 dias)</option>
+          <option value="30" selected>1 mês (30 dias)</option>
+          <option value="60">2 meses (60 dias)</option>
+          <option value="90">3 meses (90 dias)</option>
+        </select>
+      </div>
+      <button class="sbtn" onclick="gerarCronograma()">GERAR CRONOGRAMA</button>
+    </div>
+    <div id="cron-load" style="display:none"><div class="ld"><div class="sp"></div>Montando cronograma dia a dia baseado no edital...</div></div>
+    <div id="cron-content" style="display:none">
+      <div id="cron-nav" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <button class="bk" onclick="cronNav(-1)" id="cron-prev">← Anterior</button>
+        <span style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--kh);letter-spacing:2px;" id="cron-dia-label">1º DIA</span>
+        <button class="bk" onclick="cronNav(1)" id="cron-next">Próximo →</button>
+      </div>
+      <div id="cron-concluido" style="display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-bottom:16px;">
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--cr3);letter-spacing:1px;">Conteúdo concluído</span>
+        <label style="position:relative;width:40px;height:22px;cursor:pointer;">
+          <input type="checkbox" id="cron-check" onchange="toggleCronDia()" style="opacity:0;width:0;height:0;">
+          <span style="position:absolute;inset:0;background:var(--bd);border-radius:11px;transition:.3s;" id="cron-toggle-bg"></span>
+          <span style="position:absolute;top:3px;left:3px;width:16px;height:16px;background:var(--cr3);border-radius:50%;transition:.3s;" id="cron-toggle-dot"></span>
+        </label>
+      </div>
+      <div id="cron-metas" style="background:var(--cb2);border:1px solid var(--bd);padding:16px;margin-bottom:16px;"></div>
+      <div id="cron-materiais" style="margin-bottom:16px;"></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;">
+        <button class="sbtn ghost" onclick="gerarPdfDia()">📄 GERAR PDF DO DIA</button>
+        <button class="sbtn ghost" onclick="gerarPdfCompleto()">📋 PDF COMPLETO</button>
+      </div>
+      <div id="cron-progresso" style="margin-top:20px;"></div>
+    </div>
+  </div>
+</div>
 <!-- SIMULADO -->
 <div id="simulado" class="screen">
   <div class="tb"><button class="bk" onclick="stopSim();goTo('home')">← VOLTAR</button><span class="stitle">SIMULADO COMPLETO</span></div>
