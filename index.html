@@ -228,15 +228,34 @@ h1.logo span{color:var(--kh);}
     <div class="hs"><div class="hs-num" id="hs-taxa">—</div><div class="hs-lbl">TAXA DE ACERTO</div></div>
     <div class="hs"><div class="hs-num" id="hs-streak">0</div><div class="hs-lbl">DIAS SEGUIDOS</div></div>
   </div>
-  <div class="menu">
-    <div class="mc" onclick="goTo('quiz')"><div class="mc-accent"></div><div class="mc-ico">🎯</div><div class="mc-lbl">Quiz Diário</div><div class="mc-dsc">Questões de provas reais</div></div>
-    <div class="mc" onclick="goTo('historico')"><div class="mc-accent"></div><div class="mc-ico">📊</div><div class="mc-lbl">Histórico</div><div class="mc-dsc">Desempenho por matéria</div></div>
-    <div class="mc" onclick="goTo('mapa')"><div class="mc-accent"></div><div class="mc-ico">🧠</div><div class="mc-lbl">Mapa Mental</div><div class="mc-dsc">Visualize as matérias</div></div>
-    <div class="mc" onclick="goTo('simulado')"><div class="mc-accent"></div><div class="mc-ico">📋</div><div class="mc-lbl">Simulado</div><div class="mc-dsc">Prova completa cronometrada</div><div class="mc-badge">40 Q</div></div>
-    <div class="mc" onclick="goTo('fixacao')"><div class="mc-accent"></div><div class="mc-ico">📎</div><div class="mc-lbl">Fixação</div><div class="mc-dsc">Questões do seu material</div><div class="mc-badge">NOVO</div></div>
-    <div class="mc" onclick="goTo('roadmap')"><div class="mc-accent"></div><div class="mc-ico">🗺️</div><div class="mc-lbl">Roadmap</div><div class="mc-dsc">Plano por concurso</div></div>
+    <div class="menu-sections" style="max-width:480px;width:100%;animation:fadeUp .5s .3s ease both;">
+    <!-- PRATICAR -->
+    <div style="margin-bottom:20px;">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--kh3);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--bd);">📝 PRATICAR</div>
+      <div class="menu" style="max-width:none;animation:none;">
+        <div class="mc" onclick="goTo('quiz')"><div class="mc-accent"></div><div class="mc-ico">🎯</div><div class="mc-lbl">Quiz Diário</div><div class="mc-dsc">Questões de provas reais</div></div>
+        <div class="mc" onclick="goTo('simulado')"><div class="mc-accent"></div><div class="mc-ico">📋</div><div class="mc-lbl">Simulado</div><div class="mc-dsc">Prova completa cronometrada</div><div class="mc-badge" id="sim-badge">90min</div></div>
+        <div class="mc" onclick="goTo('fixacao')"><div class="mc-accent"></div><div class="mc-ico">📎</div><div class="mc-lbl">Fixação</div><div class="mc-dsc">Questões do seu material</div><div class="mc-badge">NOVO</div></div>
+      </div>
+    </div>
+
+    <!-- ESTUDAR -->
+    <div style="margin-bottom:20px;">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--kh3);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--bd);">📚 ESTUDAR</div>
+      <div class="menu" style="max-width:none;animation:none;">
+        <div class="mc" onclick="goTo('mapa')"><div class="mc-accent"></div><div class="mc-ico">🧠</div><div class="mc-lbl">Mapa Mental</div><div class="mc-dsc">Visualize as matérias</div></div>
+        <div class="mc" onclick="goTo('roadmap')"><div class="mc-accent"></div><div class="mc-ico">🗺️</div><div class="mc-lbl">Roadmap</div><div class="mc-dsc">Plano por concurso</div></div>
+      </div>
+    </div>
+
+    <!-- ACOMPANHAR -->
+    <div style="margin-bottom:20px;">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--kh3);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--bd);">📈 ACOMPANHAR</div>
+      <div class="menu" style="max-width:none;animation:none;">
+        <div class="mc" onclick="goTo('historico')"><div class="mc-accent"></div><div class="mc-ico">📊</div><div class="mc-lbl">Histórico</div><div class="mc-dsc">Desempenho por matéria</div></div>
+      </div>
+    </div>
   </div>
-</div>
 
 <!-- QUIZ -->
 <div id="quiz" class="screen">
@@ -585,7 +604,7 @@ async function ai(prompt){
 /* ═══════════════════════════════════════
    QUIZ
 ═══════════════════════════════════════ */
-let qzQs=[],qzIdx=0,qzResults=[];
+var qzQs=[],qzIdx=0,qzResults=[];
 async function startQuiz(forceTema){
   const tema=forceTema||qzTema,qtd=document.getElementById('qzqtd').value;
   const usedList=Object.keys(getUsedHashes()).slice(-60).join(',');
@@ -796,7 +815,7 @@ function toggleBr(i){document.getElementById('br'+i).classList.toggle('op');}
 /* ═══════════════════════════════════════
    SIMULADO
 ═══════════════════════════════════════ */
-let simTimer=null,simSecs=5400,simQs=[],simIdx=0,simResults=[];
+var simTimer=null,simSecs=5400,simQs=[],simIdx=0,simResults=[];
 async function startSim(){
   const cc=document.getElementById('simcc').value,dif=document.getElementById('simdif').value;
   const edital=EDITAIS[cc];
@@ -842,7 +861,7 @@ function resetSim(){document.getElementById('sim-res').style.display='none';docu
    FIXAÇÃO POR MATERIAL
    FIX: usa /api/chat consistente com os outros módulos
 ═══════════════════════════════════════ */
-let fixTipo='texto',fixQs=[],fixIdx=0,fixResults=[];
+var fixTipo='texto',fixQs=[],fixIdx=0,fixResults=[];
 function setFixTipo(tipo){
   fixTipo=tipo;
   ['texto','pdf','imagem','video'].forEach(t=>{
