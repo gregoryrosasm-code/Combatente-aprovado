@@ -193,7 +193,7 @@ function hookAnswerFunctions(){
   if(origAnsQ){
     window.ansQ=function(i){
       origAnsQ(i);
-      const q=window.qzQs&&window.qzQs[window.qzIdx-0];
+      const q=window.qzQs&&window.qzQs[window.qzIdx];
       // qzResults was just pushed, check last entry
       const last=window.qzResults&&window.qzResults[window.qzResults.length-1];
       if(last&&!last.ok&&q)addErroRevisao(q);
