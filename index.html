@@ -1111,16 +1111,98 @@ function gerarPdfDia(){
 
 function gerarPdfCompleto(){
   if(!cronDias.length){alert('Gere um cronograma primeiro!');return;}
-  var win = window.open('','_blank');
-  win.document.write('<html><head><meta charset="UTF-8"><title>Cronograma Completo</title></head><body style="font-family:Arial;padding:40px;max-width:700px;margin:0 auto">');
-  win.document.write('<h1>Cronograma — '+cronDias.length+' dias</h1>');
-  cronDias.forEach(function(dia,i){
-    win.document.write('<h2>'+(dia.titulo||(i+1)+'o Dia')+'</h2>');
-    win.document.write('<pre>'+JSON.stringify(dia,null,2)+'</pre><hr>');
+  var storage = getCronStorage();
+  var totalDias = storage.totalDias || cronDias.length;
+  var concluidos = storage.concluidos || {};
+  var totalConcluidos = 0;
+  for(var k in concluidos){ if(concluidos[k]) totalConcluidos++; }
+  var pct = Math.round((totalConcluidos / cronDias.length) * 100);
+
+  var html = '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">' +
+    '<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">' +
+    '<title>Cronograma Completo — ' + (storage.concurso || 'Estudo') + '</title>' +
+    '<style>' +
+    '*{margin:0;padding:0;box-sizing:border-box;}' +
+    'body{font-family:"IBM Plex Sans",sans-serif;color:#1a1a1a;padding:40px;max-width:800px;margin:0 auto;font-size:13px;line-height:1.7;}' +
+    'h1{font-family:"Bebas Neue",sans-serif;font-size:32px;letter-spacing:3px;color:#3d5229;border-bottom:3px solid #3d5229;padding-bottom:8px;margin-bottom:4px;}' +
+    '.sub{font-family:"IBM Plex Mono",monospace;font-size:11px;color:#888;letter-spacing:1px;margin-bottom:24px;}' +
+    '.status{display:inline-block;padding:3px 10px;font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:1px;border-radius:2px;margin-left:8px;}' +
+    '.done{background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7;}' +
+    '.pending{background:#fff8e1;color:#f57f17;border:1px solid #ffe082;}' +
+    '.section{margin-bottom:24px;}' +
+    '.section-title{font-family:"Bebas Neue",sans-serif;font-size:18px;letter-spacing:2px;color:#5a7038;margin-bottom:10px;padding-bottom:4px;border-bottom:1px solid #ddd;}' +
+    '.materia-tag{display:inline-block;background:#3d5229;color:#fff;padding:4px 12px;font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:1px;margin-bottom:16px;}' +
+    'ul{padding-left:20px;} li{margin-bottom:6px;}' +
+    '.check{display:inline-block;width:14px;height:14px;border:1.5px solid #999;margin-right:8px;vertical-align:middle;border-radius:2px;}' +
+    '.atividade{padding:10px 14px;border:1px solid #e0e0e0;margin-bottom:8px;background:#fafafa;}' +
+    '.ativ-num{font-family:"Bebas Neue",sans-serif;font-size:16px;color:#c9b86a;margin-right:8px;}' +
+    '.footer{margin-top:40px;padding-top:12px;border-top:1px solid #ddd;font-family:"IBM Plex Mono",monospace;font-size:9px;color:#aaa;text-align:center;letter-spacing:1px;}' +
+    '.capa{text-align:center;padding:120px 40px;page-break-after:always;}' +
+    '.capa h1{font-size:48px;border:none;color:#3d5229;margin-bottom:8px;}' +
+    '.prog-bar{height:10px;background:#eee;margin:20px auto;border-radius:5px;overflow:hidden;max-width:400px;}' +
+    '.prog-fill{height:100%;background:#5a7038;border-radius:5px;}' +
+    'table{width:100%;border-collapse:collapse;margin-bottom:24px;}' +
+    'td{padding:6px 10px;border-bottom:1px solid #eee;font-size:12px;}' +
+    '.dia-page{page-break-before:always;}' +
+    '</style></head><body>';
+
+  // CAPA
+  html += '<div class="capa">';
+  html += '<h1>CRONOGRAMA COMPLETO<br>DE ESTUDOS</h1>';
+  html += '<div style="font-family:IBM Plex Mono,monospace;font-size:14px;color:#5a7038;letter-spacing:3px;margin:12px 0 40px">' + (storage.concurso || 'CONCURSOS POLICIAIS') + '</div>';
+  html += '<div style="font-size:13px;color:#666;margin-bottom:6px">' + totalDias + ' dias · ' + (storage.horas || 4) + 'h por dia</div>';
+  html += '<div style="font-size:13px;color:#666;margin-bottom:6px">Progresso: ' + totalConcluidos + '/' + cronDias.length + ' dias concluídos (' + pct + '%)</div>';
+  html += '<div class="prog-bar"><div class="prog-fill" style="width:' + pct + '%"></div></div>';
+  html += '<div style="margin-top:40px;font-family:IBM Plex Mono,monospace;font-size:10px;color:#aaa;">Gerado em ' + new Date().toLocaleDateString('pt-BR') + '</div>';
+  html += '</div>';
+
+  // ÍNDICE
+  html += '<div style="page-break-after:always;"><h1>ÍNDICE</h1><div class="sub">SUMÁRIO DOS DIAS E MATÉRIAS</div><table>';
+  cronDias.forEach(function(d, i){
+    html += '<tr><td style="font-family:Bebas Neue,sans-serif;font-size:16px;color:#3d5229;">DIA ' + (i+1) + '</td>';
+    html += '<td>' + (d.materia || '—') + '</td>';
+    html += '<td style="text-align:center;">' + (concluidos[i] ? '✅' : '⬜') + '</td></tr>';
   });
-  win.document.write('</body></html>');
+  html += '</table></div>';
+
+  // CADA DIA
+  cronDias.forEach(function(dia, i){
+    var done = concluidos[i];
+    html += '<div class="dia-page">';
+    html += '<h1>' + (dia.titulo || 'DIA ' + (i+1)) + '</h1>';
+    html += '<div class="sub">' + (storage.concurso || '') + ' · DIA ' + (i+1) + ' DE ' + totalDias;
+    html += ' <span class="status ' + (done ? 'done' : 'pending') + '">' + (done ? '✅ CONCLUÍDO' : '⬜ PENDENTE') + '</span></div>';
+    if(dia.materia) html += '<div class="materia-tag">' + dia.materia + '</div>';
+    if(dia.metas && dia.metas.length){
+      html += '<div class="section"><div class="section-title">METAS DO DIA</div><ul>';
+      dia.metas.forEach(function(m){ html += '<li><span class="check"></span>' + m + '</li>'; });
+      html += '</ul></div>';
+    }
+    if(dia.topicos && dia.topicos.length){
+      html += '<div class="section"><div class="section-title">CONTEÚDO PROGRAMÁTICO</div><ul>';
+      dia.topicos.forEach(function(t){ html += '<li>▸ ' + t + '</li>'; });
+      html += '</ul></div>';
+    }
+    if(dia.atividades && dia.atividades.length){
+      html += '<div class="section"><div class="section-title">PLANO DE ATIVIDADES</div>';
+      dia.atividades.forEach(function(a,j){ html += '<div class="atividade"><span class="ativ-num">' + (j+1) + '.</span>' + a + '</div>'; });
+      html += '</div>';
+    }
+    if(dia.resumo){
+      html += '<div class="section"><div class="section-title">RESUMO TEÓRICO</div><div style="text-align:justify;color:#333;">';
+      dia.resumo.split('\n').forEach(function(p){ if(p.trim()) html += '<p style="margin-bottom:8px;">' + p + '</p>'; });
+      html += '</div></div>';
+    }
+    html += '</div>';
+  });
+
+  html += '<div class="footer">COMBATENTE APROVADO — PLANO DE ESTUDOS PERSONALIZADO · Gerado em ' + new Date().toLocaleDateString('pt-BR') + '</div>';
+  html += '</body></html>';
+
+  var win = window.open('','_blank');
+  win.document.write(html);
   win.document.close();
-  win.print();
+  setTimeout(function(){ win.print(); }, 800);
 }
 function renderCronDia(){
   if(!cronDias.length)return;
