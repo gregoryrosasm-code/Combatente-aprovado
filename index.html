@@ -233,11 +233,39 @@ h1.logo span{color:var(--kh);}
     <div class="logo-sub">CONCURSOS POLICIAIS &amp; BRIGADA MILITAR</div>
   </div>
   <div class="home-stats" id="home-stats">
-    <div class="hs"><div class="hs-num" id="hs-total">0</div><div class="hs-lbl">QUESTÕES FEITAS</div></div>
-    <div class="hs"><div class="hs-num" id="hs-taxa">—</div><div class="hs-lbl">TAXA DE ACERTO</div></div>
+    <div class="hs"><div class="hs-num" id="hs-total">0</div><div class="hs-lbl">QUESTOES FEITAS</div></div>
+    <div class="hs"><div class="hs-num" id="hs-taxa">--</div><div class="hs-lbl">TAXA DE ACERTO</div></div>
     <div class="hs"><div class="hs-num" id="hs-streak">0</div><div class="hs-lbl">DIAS SEGUIDOS</div></div>
   </div>
-    <div class="menu-sections" style="max-width:480px;width:100%;animation:fadeUp .5s .3s ease both;">
+  <div class="menu-sections" style="max-width:480px;width:100%;animation:fadeUp .5s .3s ease both;">
+    <div id="tab-praticar">
+      <div class="menu-section-title">PRATICAR</div>
+      <div class="menu" style="max-width:none;animation:none;">
+        <div class="mc" onclick="goTo('quiz')"><div class="mc-accent"></div><div class="mc-lbl">Quiz Diario</div><div class="mc-dsc">Questoes de provas reais</div></div>
+        <div class="mc" onclick="goTo('simulado')"><div class="mc-accent"></div><div class="mc-lbl">Simulado</div><div class="mc-dsc">Prova completa cronometrada</div><div class="mc-badge">90min</div></div>
+        <div class="mc" onclick="goTo('fixacao')"><div class="mc-accent"></div><div class="mc-lbl">Fixacao</div><div class="mc-dsc">Questoes do seu material</div></div>
+      </div>
+    </div>
+    <div id="tab-estudar" style="display:none;">
+      <div class="menu-section-title">ESTUDAR</div>
+      <div class="menu" style="max-width:none;animation:none;">
+        <div class="mc" onclick="goTo('mapa')"><div class="mc-accent"></div><div class="mc-lbl">Mapa Mental</div><div class="mc-dsc">Visualize as materias</div></div>
+        <div class="mc" onclick="goTo('roadmap')"><div class="mc-accent"></div><div class="mc-lbl">Roadmap</div><div class="mc-dsc">Plano por concurso</div></div>
+      </div>
+    </div>
+    <div id="tab-progresso" style="display:none;">
+      <div class="menu-section-title">PROGRESSO</div>
+      <div class="menu" style="max-width:none;animation:none;">
+        <div class="mc" onclick="goTo('historico')"><div class="mc-accent"></div><div class="mc-lbl">Historico</div><div class="mc-dsc">Desempenho por materia</div></div>
+      </div>
+    </div>
+  </div>
+  <nav class="nav-bar" id="nav-bar">
+    <button class="nav-tab active" onclick="switchTab('praticar')" id="navt-praticar"><span class="nav-ico">P</span>PRATICAR</button>
+    <button class="nav-tab" onclick="switchTab('estudar')" id="navt-estudar"><span class="nav-ico">E</span>ESTUDAR</button>
+    <button class="nav-tab" onclick="switchTab('progresso')" id="navt-progresso"><span class="nav-ico">G</span>PROGRESSO</button>
+  </nav>
+</div>
     <!-- PRATICAR -->
     <div style="margin-bottom:20px;">
       <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--kh3);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--bd);">📝 PRATICAR</div>
