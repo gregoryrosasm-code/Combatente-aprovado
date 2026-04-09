@@ -381,7 +381,31 @@ body {
     <button class="nav-tab" onclick="switchTab('progresso')" id="navt-progresso"><span class="nav-ico">G</span>PROGRESSO</button>
   </nav>
 </div>
-
+<div id="flashcards" class="screen" style="display:none;">
+  <div class="tb">
+  <button class="bk" onclick="goTo('home')">← VOLTAR</button>
+  <span class="stitle">FLASHCARDS</span>
+</div>
+<div class="fc-scene">
+  <div class="fc-card" id="fc-card">
+    <div class="fc-face fc-front">
+      <div class="fc-label">Tema: Constitucional</div>
+      <div class="fc-text">O que é o princípio da legalidade?</div>
+      <button onclick="virarCard()">Ver resposta</button>
+    </div>
+    <div class="fc-face fc-back" style="display:none;">
+      <div class="fc-label">Resposta</div>
+      <div class="fc-text">É o princípio que diz que ninguém será obrigado a fazer ou deixar de fazer alguma coisa senão em virtude de lei.</div>
+      <button onclick="virarCard()">Voltar</button>
+    </div>
+  </div>
+</div>
+<div class="fc-actions">
+  <button class="fc-btn-no" onclick="contaAcao('errei')">Errei</button>
+  <button class="fc-btn-mid" onclick="contaAcao('quase')">Quase</button>
+  <button class="fc-btn-ok" onclick="contaAcao('acertei')">Acertei</button>
+</div>
+</div>
 <!-- QUIZ -->
 <div id="quiz" class="screen">
   <div class="tb">
