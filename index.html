@@ -245,6 +245,27 @@ h1.logo span{color:var(--kh);}
 </style>
 </head>
 <body>
+ <!-- Sidebar Lateral -->
+<div id="sidebar" class="sidebar">
+  <div class="sb-logo">⚔️ Combatente<br><span>Aprovado</span></div>
+  <nav>
+    <div class="sb-section">Treinar</div>
+    <button class="sb-item" onclick="goTo('quiz')">Quiz Diário</button>
+    <button class="sb-item" onclick="goTo('flashcards')">Flashcards</button>
+    <button class="sb-item locked" onclick="showUpgrade()">Simulado <span class="lock">🔒</span></button>
+    <button class="sb-item locked" onclick="showUpgrade()">Fixação <span class="lock">🔒</span></button>
+    <div class="sb-section">Estudar</div>
+    <button class="sb-item locked" onclick="showUpgrade()">Cronograma <span class="lock">🔒</span></button>
+    <button class="sb-item locked" onclick="showUpgrade()">Mapa Mental <span class="lock">🔒</span></button>
+    <div class="sb-section">Progresso</div>
+    <button class="sb-item" onclick="goTo('revisao')">Revisão de Erros</button>
+    <button class="sb-item locked" onclick="showUpgrade()">Histórico <span class="lock">🔒</span></button>
+    <div class="sb-section">Conta</div>
+    <button class="sb-item" onclick="goTo('plano')">Meu Plano</button>
+  </nav>
+</div>
+<!-- Hamburguer para abrir no mobile -->
+<button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
 
 <!-- MODAL UPGRADE — FIX: antes era chamado mas não existia -->
 <div id="upgrade-modal" class="modal-overlay" style="display:none">
