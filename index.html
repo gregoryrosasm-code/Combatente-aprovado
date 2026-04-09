@@ -1538,27 +1538,44 @@ function showFixScore(){
 }
 function resetFixacao(){document.getElementById('fix-score').style.display='none';document.getElementById('fix-q').style.display='none';document.getElementById('fix-setup').style.display='block';}
 
-// INIT
-updateHomeStats();
-</script>
+<script>
+// Exibe aviso para upgrade nos recursos premium
+function showUpgrade() {
+  alert('Faça upgrade de plano para acessar este recurso!');
+}
 
-<div style="position:fixed;bottom:0;left:0;right:0;z-index:0;pointer-events:none;padding:6px 16px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(201,184,106,.06);">
-  <span style="font-family:'IBM Plex Mono',monospace;font-size:8px;color:rgba(240,232,212,.18);letter-spacing:.5px;">COMBATENTE APROVADO</span>
-  <span style="font-family:'IBM Plex Mono',monospace;font-size:8px;color:rgba(240,232,212,.18);letter-spacing:.5px;">Conteúdo baseado em editais oficiais • Atualizado 2025</span>
-</div>
-<script src="features-v2.js"></script>
- <script>
+// Variável para contar o uso dos botões dos flashcards
+let flashUsoDia = 0;
+
+// Conta cliques nos botões dos flashcards e limita se passar de 5
+function contaAcao(tipo) {
+  flashUsoDia++;
+  if (flashUsoDia >= 5) showUpgrade();
+}
+
+// Abre/fecha a sidebar no mobile
+function toggleSidebar() {
+  var sb = document.getElementById('sidebar');
+  if (sb) sb.classList.toggle('open');
+}
+
+// Vira o flashcard entre frente e verso
 function virarCard() {
   let f = document.querySelector('#fc-card .fc-front');
   let b = document.querySelector('#fc-card .fc-back');
-  if(f.style.display!=="none") { f.style.display="none"; b.style.display="block"; }
-  else { b.style.display="none"; f.style.display="block"; }
+  if (f && b) {
+    if (f.style.display !== "none") {
+      f.style.display = "none";
+      b.style.display = "block";
+    } else {
+      b.style.display = "none";
+      f.style.display = "block";
+    }
+  }
 }
-let flashUsoDia = 0;
-function contaAcao(tipo){
-  flashUsoDia++; 
-  if(flashUsoDia >= 5) showUpgrade();
-}
+
+// Atualiza stats da home, se a função existe
+if (typeof updateHomeStats === "function") updateHomeStats();
 </script>
 </body>
 </html>
