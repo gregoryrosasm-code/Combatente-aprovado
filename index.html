@@ -5,7 +5,29 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Combatente Aprovado</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
-<style>
+/* FLASHCARDS */
+.fc-scene{perspective:1000px;margin-bottom:20px;}
+.fc-card{width:100%;min-height:220px;position:relative;transform-style:preserve-3d;transition:transform .6s;cursor:pointer;}
+.fc-card.flipped{transform:rotateY(180deg);}
+.fc-face{position:absolute;inset:0;backface-visibility:hidden;border:1px solid var(--bd);background:var(--cb);padding:24px 20px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.fc-back{transform:rotateY(180deg);}
+.fc-front{background:var(--cb2);}
+.fc-label{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--kh3);margin-bottom:12px;text-transform:uppercase;}
+.fc-text{font-size:15px;line-height:1.7;color:var(--cr);text-align:center;font-weight:300;}
+.fc-hint{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--cr3);margin-top:16px;animation:pulse 2s infinite;}
+.fc-actions{display:flex;gap:8px;margin-top:16px;}
+.fc-actions button{flex:1;padding:12px 8px;font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:2px;cursor:pointer;border:1px solid;transition:.2s;}
+.fc-btn-no{background:var(--red2);border-color:var(--red)!important;color:#f5a0a0;}
+.fc-btn-no:hover{background:rgba(184,50,40,.35);}
+.fc-btn-mid{background:rgba(201,184,106,.08);border-color:var(--kh3)!important;color:var(--kh);}
+.fc-btn-mid:hover{background:rgba(201,184,106,.18);}
+.fc-btn-ok{background:var(--grn2);border-color:var(--grn)!important;color:#8ef5b4;}
+.fc-btn-ok:hover{background:rgba(46,139,87,.35);}
+.fc-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:20px;}
+.fc-pending-box{background:var(--cb2);border:1px solid var(--kh3);border-left:3px solid var(--kh);padding:14px 16px;margin-bottom:20px;}
+.fc-pending-title{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--kh);letter-spacing:2px;margin-bottom:8px;}
+.fc-pending-desc{font-size:12px;color:var(--cr2);margin-bottom:10px;}
+  <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{
   --bg:#0d0f0a; --cb:#161910; --cb2:#1e2214;
