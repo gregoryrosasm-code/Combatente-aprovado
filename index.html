@@ -1396,7 +1396,6 @@ async function carregarMaisDias(){
     renderCronDia();
   }
 }
-
 function toggleCronDia(){
   var cs=getCronStorage();
   if(!cs.concluidos)cs.concluidos={};
@@ -1465,28 +1464,20 @@ function loadCronSalvo(){
   if(cs.dias&&cs.dias.length){cronDias=cs.dias;cronIdx=0;renderCronDia();document.getElementById('cron-setup').style.display='none';document.getElementById('cron-content').style.display='block';}
 }
 }
+
 <script>
-// Exibe aviso para upgrade nos recursos premium
 function showUpgrade() {
   alert('Faça upgrade de plano para acessar este recurso!');
 }
-
-// Variável para contar o uso dos botões dos flashcards
 let flashUsoDia = 0;
-
-// Conta cliques nos botões dos flashcards e limita se passar de 5
 function contaAcao(tipo) {
   flashUsoDia++;
   if (flashUsoDia >= 5) showUpgrade();
 }
-
-// Abre/fecha a sidebar no mobile
 function toggleSidebar() {
   var sb = document.getElementById('sidebar');
   if (sb) sb.classList.toggle('open');
 }
-
-// Vira o flashcard entre frente e verso
 function virarCard() {
   let f = document.querySelector('#fc-card .fc-front');
   let b = document.querySelector('#fc-card .fc-back');
@@ -1500,9 +1491,6 @@ function virarCard() {
     }
   }
 }
-
-// Atualiza stats da home, se a função existe
-if (typeof updateHomeStats === "function") updateHomeStats();
 </script>
 </body>
 </html>
