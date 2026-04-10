@@ -1461,7 +1461,13 @@ function downloadTxt(texto,nome){
 
 function loadCronSalvo(){
   var cs=getCronStorage();
-  if(cs.dias&&cs.dias.length){cronDias=cs.dias;cronIdx=0;renderCronDia();document.getElementById('cron-setup').style.display='none';document.getElementById('cron-content').style.display='block';}
+  if(cs.dias&&cs.dias.length){
+    cronDias=cs.dias;
+    cronIdx=0;
+    renderCronDia();
+    document.getElementById('cron-setup').style.display='none';
+    document.getElementById('cron-content').style.display='block';
+  }
 }
 <script>
 function showUpgrade() {
