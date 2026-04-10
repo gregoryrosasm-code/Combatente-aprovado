@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Combatente Aprovado</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#0d0f0a;--cb:#161910;--cb2:#1e2214;
+  --ol:#3d5229;--ol2:#2a3a1a;--ol3:#5a7038;--ol4:#8aac50;
+  --kh:#c9b86a;--kh2:#e8d898;--kh3:#a89040;
+  --cr:#f0e8d4;--cr2:rgba(240,232,212,.6);--cr3:rgba(240,232,212,.35);
+  --bd:rgba(201,184,106,.15);--bd2:rgba(201,184,106,.28);
+  --red:#b83228;--red2:rgba(184,50,40,.18);
+  --grn:#2e8b57;--grn2:rgba(46,139,87,.18);
+}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--cr);min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:repeating-linear-gradient(0deg,transparent,transparent 47px,rgba(201,184,106,.025) 47px,rgba(201,184,106,.025) 48px),
+  repeating-linear-gradient(90deg,transparent,transparent 47px,rgba(201,184,106,.025) 47px,rgba(201,184,106,.025) 48px);}
+.screen{display:none;min-height:100vh;position:relative;z-index:1;flex-direction:column;}
+.screen.active{display:flex;}
+
+/* SIDEBAR */
+.sidebar{position:fixed;top:0;left:0;bottom:0;width:240px;background:var(--cb);color:var(--cr);padding:36px 0 24px 0;z-index:99;border-right:1px solid var(--bd);display:flex;flex-direction:column;transition:transform .24s;}
+.sb-logo{text-align:center;font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;margin-bottom:28px;line-height:1.2;}
+.sb-logo span{color:var(--kh);}
+.sb-section{font-size:11px;color:var(--ol4);margin:22px 0 10px 28px;letter-spacing:2px;text-transform:uppercase;}
+.sb-item{background:none;border:none;color:var(--cr2);text-align:left;font-family:'IBM Plex Mono',monospace;font-size:13px;padding:10px 28px;cursor:pointer;display:block;width:100%;transition:.15s;letter-spacing:.5px;}
+.sb-item:hover,.sb-item.active{background:rgba(201,184,106,.1);color:var(--kh);}
+.sb-item.locked{color:rgba(201,184,106,.35);cursor:pointer;}
+.sb-item.locked .lock{margin-left:6px;color:var(--red);}
+.sidebar-toggle{display:none;position:fixed;top:14px;left:14px;z-index:110;font-size:26px;background:none;border:none;color:var(--kh);cursor:pointer;}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:98;}
+
+/* LAYOUT — sidebar push on desktop */
+.app-content{margin-left:240px;}
+@media(max-width:900px){
+  .sidebar{transform:translateX(-110%);}
+  .sidebar.open{transform:translateX(0);}
+  .sidebar-toggle{display:block;}
+  .sidebar-overlay.visible{display:block;}
+  .app-content{margin-left:0;}
+}
+
+/* HOME */
+#home{background:radial-gradient(ellipse at 50% 20%,rgba(61,82,41,.4) 0%,transparent 60%);align-items:center;justify-content:center;padding:48px 20px;}
+.logo-wrap{display:flex;flex-direction:column;align-items:center;margin-bottom:36px;}
+.logo-shield{width:64px;height:72px;clip-path:polygon(50% 0%,100% 15%,100% 60%,50% 100%,0% 60%,0% 15%);background:var(--ol2);border:1px solid var(--kh3);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--kh);margin-bottom:16px;animation:fadeUp .5s ease both;}
+h1.logo{font-family:'Bebas Neue',sans-serif;font-size:clamp(52px,9vw,96px);line-height:.88;text-align:center;letter-spacing:3px;animation:fadeUp .5s .1s ease both;}
+h1.logo span{color:var(--kh);}
+.logo-sub{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--cr3);letter-spacing:3px;margin-top:10px;animation:fadeUp .5s .2s ease both;}
+.home-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--bd);border:1px solid var(--bd);max-width:480px;width:100%;margin-bottom:28px;animation:fadeUp .5s .25s ease both;}
+.hs{background:var(--cb);padding:14px 10px;text-align:center;}
+.hs-num{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--kh);line-height:1;}
+.hs-lbl{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--cr3);letter-spacing:1px;margin-top:2px;}
+.home-quick{display:grid;grid-template-columns:1fr 1fr;gap:9px;max-width:480px;width:100%;animation:fadeUp .5s .3s ease both;}
+.mc{background:var(--cb);border:1px solid var(--bd);padding:18px 15px;cursor:pointer;transition:.2s;position:relative;overflow:hidden;}
+.mc-accent{position:absolute;top:0;left:0;width:3px;height:100%;background:var(--ol3);transition:.2s;}
+.mc:hover .mc-accent{background:var(--kh);}
+.mc:hover{border-color:var(--bd2);transform:translateY(-2px);}
+.mc-ico{font-size:20px;margin-bottom:7px;}
+.mc-lbl{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1px;color:var(--cr);}
+.mc-dsc{font-size:11px;color:var(--cr3);margin-top:2px;font-family:'IBM Plex Mono',monospace;}
+.mc-badge{position:absolute;top:9px;right:9px;font-family:'IBM Plex Mono',monospace;font-size:9px;background:var(--ol2);color:var(--kh3);padding:2px 6px;border:1px solid var(--bd);}
+
+/* TOP BAR */
+.tb{display:flex;align-items:center;gap:12px;padding:13px 20px;border-bottom:1px solid var(--bd);background:rgba(13,15,10,.95);backdrop-filter:blur(10px);position:sticky;top:0;z-index:10;}
+.bk{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--kh);cursor:pointer;letter-spacing:2px;padding:5px 10px;border:1px solid var(--bd);background:none;transition:.2s;}
+.bk:hover{border-color:var(--kh);background:rgba(201,184,106,.1);}
+.stitle{font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:2px;color:var(--kh);}
+.tb-right{margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--kh3);}
+.pad{padding:24px 20px;max-width:720px;margin:0 auto;flex:1;width:100%;}
+
+/* FORMS */
+.fg{margin-bottom:14px;}
+.fg label{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--kh3);display:block;margin-bottom:6px;text-transform:uppercase;}
+.fg select,.fg input,.fg textarea{width:100%;padding:10px 13px;background:var(--cb2);border:1px solid var(--bd);color:var(--cr);font-family:'IBM Plex Sans',sans-serif;font-size:13px;outline:none;transition:border .2s;border-radius:0;}
+.fg select:focus,.fg input:focus,.fg textarea:focus{border-color:var(--kh);}
+.fg select option{background:var(--cb);}
+.sbtn{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:2px;padding:12px 32px;background:var(--ol);border:1px solid var(--ol3);color:var(--cr);cursor:pointer;transition:.2s;}
+.sbtn:hover{background:var(--ol3);}
+.sbtn:disabled{opacity:.3;cursor:not-allowed;}
+.sbtn.ghost{background:transparent;color:var(--kh);border:1px solid var(--bd);}
+.sbtn.ghost:hover{background:rgba(201,184,106,.1);border-color:var(--kh);}
+
+/* CHIPS */
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px;}
+.chip{font-family:'IBM Plex Mono',monospace;font-size:10px;padding:6px 11px;border:1px solid var(--bd);background:transparent;color:var(--cr2);cursor:pointer;transition:.2s;}
+.chip.on,.chip:hover{border-color:var(--kh);background:rgba(201,184,106,.1);color:var(--kh);}
+.period-btn{font-family:'IBM Plex Mono',monospace;font-size:10px;padding:5px 12px;border:1px solid var(--bd);background:transparent;color:var(--cr3);cursor:pointer;transition:.2s;letter-spacing:1px;}
+.period-btn.on,.period-btn:hover{border-color:var(--kh);background:rgba(201,184,106,.1);color:var(--kh);}
+
+/* QUIZ */
+.quiz-header{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:20px;}
+.qh-stat{background:var(--cb2);border:1px solid var(--bd);padding:10px 12px;text-align:center;}
+.qh-num{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--kh);line-height:1;}
+.qh-lbl{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--cr3);letter-spacing:1px;margin-top:2px;}
+.hot-topics{background:var(--cb2);border:1px solid var(--bd);border-left:3px solid var(--red);padding:14px 16px;margin-bottom:20px;}
+.ht-title{font-family:'IBM Plex Mono',monospace;font-size:10px;color:rgba(240,120,110,.9);letter-spacing:2px;margin-bottom:10px;}
+.ht-items{display:flex;flex-wrap:wrap;gap:6px;}
+.ht-item{font-size:11px;background:rgba(184,50,40,.12);border:1px solid rgba(184,50,40,.25);color:rgba(240,160,150,.9);padding:3px 9px;font-family:'IBM Plex Mono',monospace;}
+.ht-pct{font-size:10px;opacity:.7;margin-left:3px;}
+.qprog{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--kh3);margin-bottom:5px;letter-spacing:1px;display:flex;justify-content:space-between;}
+.qbar{height:2px;background:var(--bd);margin-bottom:22px;}
+.qfill{height:100%;background:var(--kh);transition:width .4s;}
+.q-materia-tag{display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:9px;padding:3px 8px;background:var(--ol2);color:var(--ol4);border:1px solid var(--ol);margin-bottom:12px;letter-spacing:1px;}
+.qtxt{font-size:16px;line-height:1.7;margin-bottom:20px;font-weight:300;color:var(--cr);}
+.opts{display:flex;flex-direction:column;gap:7px;}
+.opt{padding:13px 16px;border:1px solid var(--bd);background:var(--cb);cursor:pointer;transition:.15s;text-align:left;font-family:'IBM Plex Sans',sans-serif;font-size:13px;color:var(--cr2);display:flex;align-items:flex-start;gap:10px;line-height:1.5;}
+.opt:hover:not(:disabled){border-color:var(--bd2);background:var(--cb2);color:var(--cr);}
+.opt.ok{border-color:var(--grn);background:var(--grn2);color:#8ef5b4;}
+.opt.no{border-color:var(--red);background:var(--red2);color:#f5a0a0;}
+.opt:disabled{cursor:default;}
+.olet{font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--kh3);min-width:16px;flex-shrink:0;margin-top:1px;}
+.opt.ok .olet{color:#8ef5b4;}.opt.no .olet{color:#f5a0a0;}
+.fbk{margin-top:16px;padding:14px 16px;border-left:3px solid var(--kh3);background:rgba(201,184,106,.04);font-size:12px;line-height:1.7;color:var(--cr3);display:none;}
+.fbk-lei{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--kh3);margin-bottom:6px;letter-spacing:1px;}
+.nxt{margin-top:18px;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;padding:10px 26px;background:var(--ol);border:1px solid var(--ol3);color:var(--cr);cursor:pointer;transition:.2s;display:none;}
+.nxt:hover{background:var(--ol3);}
+
+/* SCORE */
+.score-wrap{padding:36px 0;text-align:center;}
+.score-verdict{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:3px;margin-bottom:4px;}
+.score-num{font-family:'Bebas Neue',sans-serif;font-size:80px;color:var(--kh);line-height:1;}
+.score-sub{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--cr3);letter-spacing:2px;margin-bottom:28px;}
+.score-breakdown{border:1px solid var(--bd);margin-bottom:24px;text-align:left;}
+.sb-row{display:flex;align-items:center;padding:10px 14px;border-bottom:1px solid var(--bd);gap:10px;font-size:12px;}
+.sb-row:last-child{border-bottom:none;}
+.sb-mat{flex:1;color:var(--cr2);}
+.sb-bar-wrap{width:120px;height:6px;background:var(--bd);}
+.sb-bar{height:100%;background:var(--ol4);transition:width .6s;}
+.sb-pct{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--kh3);min-width:32px;text-align:right;}
+
+/* LOADING / ERROR */
+.ld{display:flex;align-items:center;gap:11px;padding:20px;border:1px solid var(--bd);font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--kh3);}
+.sp{width:16px;height:16px;border:2px solid var(--bd);border-top-color:var(--kh);border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0;}
+.err{padding:14px;border:1px solid var(--red);background:var(--red2);font-size:12px;color:#f5a0a0;font-family:'IBM Plex Mono',monospace;}
+.section-label{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--kh3);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--bd);}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;}
+.modal-box{background:var(--cb);border:1px solid var(--kh3);padding:28px 24px;max-width:400px;width:100%;}
+.modal-title{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;color:var(--kh);margin-bottom:12px;}
+.modal-body{font-size:13px;color:var(--cr2);line-height:1.7;margin-bottom:20px;font-family:'IBM Plex Mono',monospace;}
+.modal-close{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;padding:9px 20px;background:transparent;border:1px solid var(--bd);color:var(--cr3);cursor:pointer;}
+.modal-close:hover{border-color:var(--kh);color:var(--kh);}
+
+/* HISTÓRICO */
+.hist-overview{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:20px;}
+.ho-card{background:var(--cb2);border:1px solid var(--bd);padding:14px 12px;text-align:center;}
+.ho-num{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--kh);line-height:1;}
+.ho-lbl{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--cr3);letter-spacing:1px;margin-top:3px;}
+.mat-hist-list{display:flex;flex-direction:column;gap:6px;margin-bottom:24px;}
+.mh-row{background:var(--cb2);border:1px solid var(--bd);padding:12px 14px;}
+.mh-top{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.mh-name{flex:1;font-size:13px;font-weight:500;color:var(--cr);}
+.mh-pct{font-family:'Bebas Neue',sans-serif;font-size:18px;line-height:1;}
+.mh-counts{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--cr3);}
+.mh-bar-wrap{height:5px;background:var(--bd);margin-top:2px;}
+.mh-bar{height:100%;transition:width .6s;}
+.streak-row{display:flex;align-items:center;gap:12px;background:var(--cb2);border:1px solid var(--bd);padding:14px 16px;margin-bottom:20px;}
+.str-icon{font-family:'Bebas Neue',sans-serif;font-size:34px;color:var(--kh);line-height:1;}
+.str-info{flex:1;}
+.str-title{font-size:13px;font-weight:500;color:var(--cr);}
+.str-sub{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--cr3);margin-top:2px;}
+.str-dots{display:flex;gap:3px;margin-top:8px;}
+.str-dot{width:9px;height:9px;border-radius:50%;background:var(--bd);}
+.str-dot.done{background:var(--kh);}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:24px;}
+.cal-day{aspect-ratio:1;border-radius:2px;background:var(--bd);}
+.cal-day.d1{background:rgba(201,184,106,.25);}
+.cal-day.d2{background:rgba(201,184,106,.5);}
+.cal-day.d3{background:var(--kh);}
+
+/* ROADMAP */
+.wk{margin-bottom:14px;border:1px solid var(--bd);}
+.wkh{background:var(--ol2);padding:11px 14px;display:flex;justify-content:space-between;align-items:center;}
+.wkh-title{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:2px;color:var(--kh);}
+.wkh-focus{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--cr3);}
+.wkb{padding:12px 14px;}
+.dr{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--bd);font-size:12px;}
+.dr:last-child{border-bottom:none;}
+.dl{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--kh3);min-width:28px;padding-top:1px;flex-shrink:0;}
+.dt{color:var(--cr2);line-height:1.55;}
+
+/* MAPA MENTAL */
+.root-node{background:var(--ol);padding:14px 20px;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;text-align:center;margin-bottom:14px;border:1px solid var(--ol3);}
+.brs{display:flex;flex-direction:column;gap:8px;}
+.br{border:1px solid var(--bd);overflow:hidden;}
+.brh{padding:11px 14px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;background:rgba(61,82,41,.15);font-size:13px;font-weight:500;transition:.2s;}
+.brh:hover{background:rgba(61,82,41,.3);}
+.bch{font-size:10px;color:var(--kh3);transition:transform .2s;}
+.br.op .bch{transform:rotate(180deg);}
+.brb{display:none;padding:12px 14px;}
+.br.op .brb{display:block;}
+.br.op{border-color:var(--ol3);}
+.ll{list-style:none;}
+.ll li{padding:5px 0 5px 14px;font-size:12px;color:var(--cr3);border-bottom:1px solid rgba(201,184,106,.06);position:relative;line-height:1.55;}
+.ll li:last-child{border-bottom:none;}
+.ll li::before{content:'▸';position:absolute;left:0;color:var(--kh3);font-size:9px;top:7px;}
+
+/* SIMULADO */
+.sim-cards{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px;}
+.sc{background:var(--cb2);border:1px solid var(--bd);padding:14px;text-align:center;}
+.sc-num{font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--kh);line-height:1;}
+.sc-lbl{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--cr3);letter-spacing:1px;}
+.sim-clk{font-family:'Bebas Neue',sans-serif;font-size:44px;color:var(--kh);text-align:center;letter-spacing:4px;margin-bottom:4px;}
+.sim-clk.warn{color:var(--red);animation:pulse 1s infinite;}
+.sqc{font-family:'IBM Plex Mono',monospace;font-size:10px;text-align:center;color:var(--cr3);margin-bottom:20px;display:flex;justify-content:center;gap:8px;}
+.sqc-mat{background:var(--ol2);color:var(--ol4);padding:2px 8px;border:1px solid var(--ol);}
+.sim-prog-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.sim-prog-label{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--kh3);letter-spacing:1px;}
+.sim-prog-bar{height:3px;background:var(--bd);margin-bottom:20px;}
+.sim-prog-fill{height:100%;background:var(--ol4);transition:width .3s;}
+
+/* FLASHCARDS */
+.fc-scene{perspective:1000px;margin-bottom:20px;}
+.fc-card{width:100%;min-height:220px;position:relative;transform-style:preserve-3d;transition:transform .6s;cursor:pointer;}
+.fc-card.flipped{transform:rotateY(180deg);}
+.fc-face{position:absolute;inset:0;backface-visibility:hidden;border:1px solid var(--bd);background:var(--cb);padding:24px 20px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.fc-back{transform:rotateY(180deg);background:var(--cb2);}
+.fc-label{font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--kh3);margin-bottom:12px;}
+.fc-text{font-size:15px;line-height:1.7;color:var(--cr);text-align:center;font-weight:300;}
+.fc-hint{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--cr3);margin-top:16px;animation:pulse 2s infinite;}
+.fc-actions{display:flex;gap:8px;margin-top:16px;}
+.fc-actions button{flex:1;padding:12px 8px;font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:2px;cursor:pointer;border:1px solid;transition:.2s;}
+.fc-btn-no{background:var(--red2);border-color:var(--red)!important;color:#f5a0a0;}
+.fc-btn-no:hover{background:rgba(184,50,40,.35);}
+.fc-btn-mid{background:rgba(201,184,106,.08);border-color:var(--kh3)!important;color:var(--kh);}
+.fc-btn-mid:hover{background:rgba(201,184,106,.18);}
+.fc-btn-ok{background:var(--grn2);border-color:var(--grn)!important;color:#8ef5b4;}
+.fc-btn-ok:hover{background:rgba(46,139,87,.35);}
+
+/* CRONOGRAMA */
+.cron-mat-card{background:var(--cb2);border:1px solid var(--bd);padding:14px;margin-bottom:8px;}
+.cron-topico{font-size:12px;color:var(--cr3);padding:4px 0 4px 14px;position:relative;line-height:1.55;}
+.cron-topico::before{content:'▸';position:absolute;left:0;color:var(--kh3);font-size:9px;top:6px;}
+.cron-prog-bar{height:6px;background:var(--bd);margin-top:8px;}
+.cron-prog-fill{height:100%;background:var(--ol4);transition:width .6s;}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:none;}}
+@keyframes spin{to{transform:rotate(360deg);}}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div id="sidebar" class="sidebar">
+  <div class="sb-logo">Combatente<br><span>Aprovado</span></div>
+  <nav>
+    <div class="sb-section">Treinar</div>
+    <button class="sb-item" onclick="goTo('quiz')">Quiz Diário</button>
+    <button class="sb-item" onclick="goTo('flashcards')">Flashcards</button>
+    <button class="sb-item" onclick="goTo('simulado')">Simulado</button>
+    <button class="sb-item" onclick="goTo('fixacao')">Fixação por Material</button>
+    <div class="sb-section">Estudar</div>
+    <button class="sb-item" onclick="goTo('cronograma')">Cronograma Diário</button>
+    <button class="sb-item" onclick="goTo('roadmap')">Roadmap</button>
+    <button class="sb-item" onclick="goTo('mapa')">Mapa Mental</button>
+    <div class="sb-section">Progresso</div>
+    <button class="sb-item" onclick="goTo('historico')">Histórico</button>
+  </nav>
+</div>
+<div id="sidebar-overlay" class="sidebar-overlay" onclick="closeSidebar()"></div>
+<button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+
+<!-- MODAL UPGRADE -->
+<div id="upgrade-modal" class="modal-overlay" style="display:none">
+  <div class="modal-box">
+    <div class="modal-title">LIMITE ATINGIDO</div>
+    <div class="modal-body">Você atingiu o limite de requisições por hora.<br><br>Aguarde alguns minutos e tente novamente.</div>
+    <button class="modal-close" onclick="closeUpgradeModal()">FECHAR</button>
+  </div>
+</div>
+
+<!-- CONTEÚDO PRINCIPAL -->
+<div class="app-content">
+
+<!-- HOME -->
+<div id="home" class="screen active">
+  <div class="logo-wrap">
+    <div class="logo-shield">C</div>
+    <h1 class="logo">COMBATENTE<br><span>APROVADO</span></h1>
+    <div class="logo-sub">CONCURSOS POLICIAIS &amp; BRIGADA MILITAR</div>
+  </div>
+  <div class="home-stats" id="home-stats">
+    <div class="hs"><div class="hs-num" id="hs-total">0</div><div class="hs-lbl">QUESTÕES FEITAS</div></div>
+    <div class="hs"><div class="hs-num" id="hs-taxa">—</div><div class="hs-lbl">TAXA DE ACERTO</div></div>
+    <div class="hs"><div class="hs-num" id="hs-streak">0</div><div class="hs-lbl">DIAS SEGUIDOS</div></div>
+  </div>
+  <div class="home-quick">
+    <div class="mc" onclick="goTo('quiz')"><div class="mc-accent"></div><div class="mc-ico">🎯</div><div class="mc-lbl">Quiz Diário</div><div class="mc-dsc">Questões de provas reais</div></div>
+    <div class="mc" onclick="goTo('simulado')"><div class="mc-accent"></div><div class="mc-ico">📋</div><div class="mc-lbl">Simulado</div><div class="mc-dsc">Prova completa</div><div class="mc-badge">40Q</div></div>
+    <div class="mc" onclick="goTo('flashcards')"><div class="mc-accent"></div><div class="mc-ico">🃏</div><div class="mc-lbl">Flashcards</div><div class="mc-dsc">Revisão rápida</div></div>
+    <div class="mc" onclick="goTo('historico')"><div class="mc-accent"></div><div class="mc-ico">📊</div><div class="mc-lbl">Histórico</div><div class="mc-dsc">Seu desempenho</div></div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div id="quiz" class="screen">
+  <div class="tb"><button class="bk" onclick="goTo('home')">← VOLTAR</button><span class="stitle">QUIZ DIÁRIO</span><div class="tb-right" id="qz-streak-tb"></div></div>
+  <div class="pad">
+    <div id="qz-setup">
+      <div class="quiz-header">
+        <div class="qh-stat"><div class="qh-num" id="qzh-feitas">0</div><div class="qh-lbl">HOJE</div></div>
+        <div class="qh-stat"><div class="qh-num" id="qzh-taxa">—</div><div class="qh-lbl">APROVEITAMENTO</div></div>
+        <div class="qh-stat"><div class="qh-num" id="qzh-streak">0</div><div class="qh-lbl">SEQUÊNCIA</div></div>
+      </div>
+      <div class="hot-topics" id="hot-topics-box" style="display:none">
+        <div class="ht-title">// MAIS COBRADOS NAS PROVAS</div>
+        <div class="ht-items" id="ht-items"></div>
+      </div>
+      <div class="fg"><label>Tema</label><div class="chips" id="qchips"></div></div>
+      <div class="fg"><label>Questões</label>
+        <select id="qzqtd"><option value="10">10 questões</option><option value="20" selected>20 questões</option><option value="30">30 questões</option></select>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="sbtn" id="qzstart" onclick="startQuiz()" disabled>INICIAR QUIZ</button>
+        <button class="sbtn ghost" onclick="startQuizFraco()">PONTOS FRACOS</button>
+      </div>
+    </div>
+    <div id="qz-load" style="display:none"><div class="ld"><div class="sp"></div>Carregando questões de provas anteriores...</div></div>
+    <div id="qz-q" style="display:none"></div>
+    <div id="qz-score" style="display:none"></div>
+  </div>
+</div>
+
+<!-- FLASHCARDS -->
+<div id="flashcards" class="screen">
+  <div class="tb"><button class="bk" onclick="goTo('home')">← VOLTAR</button><span class="stitle">FLASHCARDS</span></div>
+  <div class="pad">
+    <div id="fc-setup">
+      <div class="fg"><label>Tema</label><div class="chips" id="fcchips"></div></div>
+      <button class="sbtn" id="fcstart" onclick="startFlashcards()" disabled>INICIAR FLASHCARDS</button>
+    </div>
+    <div id="fc-session" style="display:none">
+      <div class="qprog" id="fc-prog"></div>
+      <div class="fc-scene">
+        <div class="fc-card" id="fc-card" onclick="flipCard()">
+          <div class="fc-face" id="fc-front">
+            <div class="fc-label" id="fc-subtema"></div>
+            <div class="fc-text" id="fc-pergunta"></div>
+            <div class="fc-hint">Toque para ver a resposta</div>
+          </div>
+          <div class="fc-face fc-back" id="fc-back">
+            <div class="fc-label">RESPOSTA</div>
+            <div class="fc-text" id="fc-resposta"></div>
+          </div>
+        </div>
+      </div>
+      <div class="fc-actions" id="fc-actions" style="display:none">
+        <button class="fc-btn-no" onclick="respFlash('errei')">Errei</button>
+        <button class="fc-btn-mid" onclick="respFlash('quase')">Quase</button>
+        <button class="fc-btn-ok" onclick="respFlash('acertei')">Acertei</button>
+      </div>
+    </div>
+    <div id="fc-load" style="display:none"><div class="ld"><div class="sp"></div>Gerando flashcards...</div></div>
+    <div id="fc-score" style="display:none"></div>
+  </div>
+</div>
+
+<!-- HISTÓRICO -->
+<div id="historico" class="screen">
+  <div class="tb"><button class="bk" onclick="goTo('home')">← VOLTAR</button><span class="stitle">HISTÓRICO</span></div>
+  <div class="pad">
+    <div class="streak-row">
+      <div class="str-icon" id="hist-streak-num">0</div>
+      <div class="str-info">
+        <div class="str-title">Sequência de estudos</div>
+        <div class="str-sub" id="hist-streak-sub">Nenhum dia registrado ainda</div>
+        <div class="str-dots" id="hist-dots"></div>
+      </div>
+    </div>
+    <div class="hist-overview">
+      <div class="ho-card"><div class="ho-num" id="hov-total">0</div><div class="ho-lbl">QUESTÕES</div></div>
+      <div class="ho-card"><div class="ho-num" id="hov-acertos">0</div><div class="ho-lbl">ACERTOS</div></div>
+      <div class="ho-card"><div class="ho-num" id="hov-taxa">—</div><div class="ho-lbl">TAXA</div></div>
+      <div class="ho-card"><div class="ho-num" id="hov-sims">0</div><div class="ho-lbl">SIMULADOS</div></div>
+    </div>
+    <div class="section-label">DESEMPENHO POR MATÉRIA</div>
+    <div class="mat-hist-list" id="mat-hist-list"></div>
+    <div class="section-label">ATIVIDADE (ÚLTIMAS 5 SEMANAS)</div>
+    <div class="cal-grid" id="cal-grid"></div>
+    <div style="text-align:center;margin-top:8px">
+      <button class="sbtn ghost" onclick="if(confirm('Apagar todo o histórico?'))clearHistory()">LIMPAR HISTÓRICO</button>
+    </div>
+  </div>
+</div>
+
+<!-- ROADMAP -->
+<div id="roadmap" class="screen">
+  <div class="tb"><button class="bk" onclick="goTo('home')">← VOLTAR</button><span class="stitle">ROADMAP</span></div>
+  <div class="pad">
+    <div class="fg"><label>Concurso alvo</label>
+      <select id="rmcc">
+        <option value="">Selecione...</option>
+        <option>Brigada Militar RS</option><option>Polícia Civil RS</option>
+        <option>Polícia Federal</option><option>PRF - Polícia Rodoviária Federal</option>
+        <option>Polícia Civil SC</option><option>Polícia Penal</option><option>Polícia Militar SP</option>
+      </select>
+    </div>
+    <div class="fg"><label>Horas por dia</label>
+      <select id="rmh"><option value="2">2h/dia</option><option value="4" selected>4h/dia</option><option value="6">6h/dia</option><option value="8">8h/dia</option></select>
+    </div>
+    <div class="fg"><label>Prazo</label>
+      <select id="rmp"><option>1 mês</option><option selected>3 meses</option><option>6 meses</option><option>1 ano</option></select>
+    </div>
+    <button class="sbtn" onclick="gerarRoadmap()">GERAR ROADMAP</button>
+    <div id="rm-load" style="display:none;margin-top:18px"><div class="ld"><div class="sp"></div>Montando plano personalizado...</div></div>
+    <div id="rm-res"></div>
+  </div>
+</div>
+
+<!-- MAPA MENTAL -->
+<div id="mapa" class="screen">
+  <div class="tb"><button class="bk" onclick="goTo('home')">← VOLTAR</button><span class="stitle">MAPA MENTAL</span></div>
+  <div class="pad">
+    <div class="fg"><label>Concurso (opcional)</label>
+      <select id="mpcc" onchange="salvarConcursoMapa(this.value)" style="width:100%;padding:10px 13px;background:var(--cb2);border:1px solid var(--bd);color:var(--cr);font-family:'IBM Plex Sans',sans-serif;font-size:13px;outline:none;border-radius:0;">
+        <option value="">Selecione o concurso...</option>
+        <option>Brigada Militar RS</option><option>Polícia Civil RS</option><option>Polícia Federal</option>
+        <option>PRF - Polícia Rodoviária Federal</option><option>Polícia Civil SC</option><option>Polícia Penal</option><option>Polícia Militar SP</option>
+      </select>
+    </div>
+    <div class="fg"><label>Matéria</label><div class="chips" id="mpchips"></div></div>
+    <button class="sbtn" id="mpstart" onclick="gerarMapa()" disabled>GERAR MAPA MENTAL</button>
+    <div id="mp-load" style="display:none;margin-top:18px"><div class="ld"><div class="sp"></div>Construindo mapa mental...</div></div>
+    <div id="mp-res"></div>
+  </div>
+</div>
+
+<!-- SIMULADO -->
+<div id="simulado" class="screen">
+  <div class="tb"><button class="bk" onclick="stopSim();goTo('home')">← VOLTAR</button><span class="stitle">SIMULADO COMPLETO</span></div>
+  <div class="pad">
+    <div id="sim-setup">
+      <div class="sim-cards">
+        <div class="sc"><div class="sc-num">40</div><div class="sc-lbl">QUESTÕES</div></div>
+        <div class="sc"><div class="sc-num">90</div><div class="sc-lbl">MINUTOS</div></div>
+      </div>
+      <div class="fg"><label>Concurso</label>
+        <select id="simcc">
+          <option>Brigada Militar RS</option><option>Polícia Civil RS</option>
+          <option>Polícia Federal</option><option>PRF - Polícia Rodoviária Federal</option>
+          <option>Polícia Civil SC</option><option>Polícia Penal</option><option>Polícia Militar SP</option>
+        </select>
+      </div>
+      <div class="fg"><label>Nível</label>
+        <select id="simdif"><option value="fácil">Iniciante</option><option value="médio" selected>Intermediário</option><option value="difícil">Avançado</option></select>
+      </div>
+      <button class="sbtn" onclick="startSim()">INICIAR SIMULADO</button>
+    </div>
+    <div id="sim-load" style="display:none"><div class="ld"><div class="sp"></div>Gerando prova completa...</div></div>
+    <div id="sim-prova" style="display:none">
+      <div class="sim-clk" id="simclk">90:00</div>
+      <div class="sqc" id="simctr"></div>
+      <div class="sim-prog-header"><span class="sim-prog-label" id="sim-prog-txt"></span></div>
+      <div class="sim-prog-bar"><div class="sim-prog-fill" id="sim-prog-fill"></div></div>
+      <div id="simqbox"></div>
+      <button class="nxt" id="simnxt" onclick="simNext()">PRÓXIMA →</button>
+    </div>
+    <div id="sim-res" style="display:none"></div>
+  </div>
+</div>
+
+<!-- FIXAÇÃO POR MATERIAL -->
+<div id="fixacao" class="screen">
+  <div class="tb"><button class="bk" onclick="goTo('home')">← VOLTAR</button><span class="stitle">FIXAÇÃO POR MATERIAL</span></div>
+  <div class="pad">
+    <div id="fix-setup">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--kh3);margin-bottom:14px;line-height:1.7;">
+        Envie o conteúdo que você estudou e geramos 20 questões para fixação.
+      </div>
+      <div style="display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap;">
+        <button class="period-btn on" onclick="setFixTipo('texto')" id="tab-texto">TEXTO</button>
+        <button class="period-btn" onclick="setFixTipo('pdf')" id="tab-pdf">PDF</button>
+        <button class="period-btn" onclick="setFixTipo('imagem')" id="tab-imagem">IMAGEM / FOTO</button>
+        <button class="period-btn" onclick="setFixTipo('video')" id="tab-video">VÍDEO</button>
+      </div>
+      <div id="fix-input-texto">
+        <div class="fg"><label>COLE O CONTEÚDO ESTUDADO</label>
+          <textarea id="fix-texto" rows="9" style="resize:vertical;line-height:1.6;" placeholder="Cole aqui o texto da lei, apostila, resumo ou anotações..."></textarea>
+        </div>
+      </div>
+      <div id="fix-input-pdf" style="display:none">
+        <div class="fg"><label>ENVIE O PDF</label><input type="file" id="fix-pdf-file" accept=".pdf"></div>
+        <div id="fix-pdf-preview" style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--kh3);margin-top:8px;"></div>
+      </div>
+      <div id="fix-input-imagem" style="display:none">
+        <div class="fg"><label>ENVIE A FOTO OU IMAGEM</label><input type="file" id="fix-img-file" accept="image/*"></div>
+        <div id="fix-img-preview" style="margin-top:10px;"></div>
+      </div>
+      <div id="fix-input-video" style="display:none">
+        <div class="fg"><label>COLE A TRANSCRIÇÃO DO VÍDEO</label>
+          <textarea id="fix-video-texto" rows="9" style="resize:vertical;line-height:1.6;" placeholder="Cole aqui a transcrição do vídeo..."></textarea>
+        </div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--cr3);padding:10px 12px;border:1px solid var(--bd);background:var(--cb2);line-height:1.7;margin-top:-10px;">
+          YOUTUBE: clique em "..." → "Mostrar transcrição" → copie e cole aqui
+        </div>
+      </div>
+      <button class="sbtn" style="margin-top:18px" onclick="gerarFixacao()">GERAR 20 QUESTÕES</button>
+    </div>
+    <div id="fix-load" style="display:none"><div class="ld"><div class="sp"></div>Analisando material e gerando questões...</div></div>
+    <div id="fix-q" style="display:none"></div>
+    <div id="fix-score" style="display:none"></div>
+  </div>
+</div>
+
+<!-- CRONOGRAMA DIÁRIO -->
+<div id="cronograma" class="screen">
+  <div class="tb"><button class="bk" onclick="goTo('home')">← VOLTAR</button><span class="stitle">CRONOGRAMA DIÁRIO</span><div class="tb-right" id="cron-streak-tb"></div></div>
+  <div class="pad">
+    <div id="cron-setup">
+      <div class="fg"><label>Concurso</label>
+        <select id="croncc">
+          <option value="">Selecione...</option>
+          <option>Brigada Militar RS</option><option>Polícia Civil RS</option>
+          <option>Polícia Federal</option><option>PRF - Polícia Rodoviária Federal</option>
+          <option>Polícia Civil SC</option><option>Polícia Penal</option><option>Polícia Militar SP</option>
+        </select>
+      </div>
+      <div class="fg"><label>Horas por dia</label>
+        <select id="cronh"><option value="1">1h/dia</option><option value="2">2h/dia</option><option value="4" selected>4h/dia</option><option value="6">6h/dia</option><option value="8">8h/dia</option></select>
+      </div>
+      <div class="fg"><label>Duração do plano</label>
+        <select id="cronp">
+          <option value="7">1 semana (7 dias)</option><option value="14">2 semanas (14 dias)</option>
+          <option value="30" selected>1 mês (30 dias)</option><option value="60">2 meses (60 dias)</option><option value="90">3 meses (90 dias)</option>
+        </select>
+      </div>
+      <button class="sbtn" onclick="gerarCronograma()">GERAR CRONOGRAMA</button>
+    </div>
+    <div id="cron-load" style="display:none"><div class="ld"><div class="sp"></div>Montando cronograma dia a dia...</div></div>
+    <div id="cron-content" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <button class="bk" onclick="cronNav(-1)" id="cron-prev">← Anterior</button>
+        <span style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--kh);letter-spacing:2px;" id="cron-dia-label">1º DIA</span>
+        <button class="bk" onclick="cronNav(1)" id="cron-next">Próximo →</button>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-bottom:16px;">
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--cr3);letter-spacing:1px;">Conteúdo concluído</span>
+        <label style="position:relative;width:40px;height:22px;cursor:pointer;">
+          <input type="checkbox" id="cron-check" onchange="toggleCronDia()" style="opacity:0;width:0;height:0;">
+          <span style="position:absolute;inset:0;background:var(--bd);border-radius:11px;transition:.3s;" id="cron-toggle-bg"></span>
+          <span style="position:absolute;top:3px;left:3px;width:16px;height:16px;background:var(--cr3);border-radius:50%;transition:.3s;" id="cron-toggle-dot"></span>
+        </label>
+      </div>
+      <div id="cron-metas" style="background:var(--cb2);border:1px solid var(--bd);padding:16px;margin-bottom:16px;"></div>
+      <div id="cron-materiais" style="margin-bottom:16px;"></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;">
+        <button class="sbtn ghost" onclick="gerarTxtDia()">📄 BAIXAR DIA (.txt)</button>
+        <button class="sbtn ghost" onclick="gerarTxtCompleto()">📋 BAIXAR COMPLETO (.txt)</button>
+      </div>
+      <div id="cron-progresso" style="margin-top:20px;"></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /app-content -->
+
+<script>
+/* ═══════════════════════════
+   CONSTANTES
+═══════════════════════════ */
+const TEMAS=['Direito Penal','Processo Penal','Constituição Federal','Estatuto Policial','Ética Profissional','Direitos Humanos','Criminologia','Legislação Ambiental','Direito Administrativo','Língua Portuguesa'];
+
+const HOT_TOPICS={
+  'Direito Penal':[{t:'Tipicidade e excludentes de ilicitude',p:82},{t:'Crimes contra a pessoa (arts. 121-154)',p:78},{t:'Crimes contra o patrimônio',p:74},{t:'Tentativa e consumação',p:70},{t:'Penas e aplicação',p:65}],
+  'Processo Penal':[{t:'Prisão em flagrante',p:85},{t:'Inquérito policial',p:80},{t:'Ação penal pública e privada',p:72},{t:'Provas e nulidades',p:68},{t:'Habeas corpus',p:60}],
+  'Constituição Federal':[{t:'Direitos e garantias fundamentais (art. 5º)',p:90},{t:'Organização do Estado',p:75},{t:'Segurança pública (art. 144)',p:88},{t:'Poder Executivo',p:62},{t:'Remédios constitucionais',p:70}],
+  'Estatuto Policial':[{t:'Deveres e proibições',p:85},{t:'Regime disciplinar',p:80},{t:'Cargo e remuneração',p:65},{t:'PAD',p:72}],
+  'Ética Profissional':[{t:'Princípios da Administração Pública',p:82},{t:'Código de ética policial',p:78},{t:'Improbidade administrativa',p:70},{t:'Conflito de interesses',p:58}],
+  'Direitos Humanos':[{t:'Convenção Americana (Pacto San José)',p:75},{t:'Uso progressivo da força',p:80},{t:'Tortura — Lei 9.455/97',p:85},{t:'ECA',p:65}],
+  'Criminologia':[{t:'Teorias do crime',p:70},{t:'Vitimologia',p:65},{t:'Política criminal',p:60},{t:'Reincidência',p:55}],
+  'Legislação Ambiental':[{t:'Lei 9.605/98 — crimes ambientais',p:78},{t:'Área de preservação permanente',p:65},{t:'Responsabilidade ambiental',p:60}],
+  'Direito Administrativo':[{t:'Atos administrativos',p:80},{t:'Licitação (Lei 14.133/21)',p:72},{t:'Agentes públicos',p:75},{t:'Poder de polícia',p:85}],
+  'Língua Portuguesa':[{t:'Interpretação de texto',p:90},{t:'Concordância verbal e nominal',p:80},{t:'Crase e pontuação',p:75},{t:'Regência verbal',p:68}]
+};
+
+const EDITAIS={
+  'Brigada Militar RS':{banca:'FUNDATEC',totalQuestoes:50,notaCorte:60,fonte:'Edital SD-P 01/2025 — FUNDATEC/BM-RS',
+    materias:[
+      {nome:'Língua Portuguesa',questoes:8,peso:16,topicos:['Interpretação e compreensão de texto','Ortografia oficial','Acentuação gráfica','Pontuação','Concordância verbal e nominal','Regência verbal e nominal','Crase']},
+      {nome:'Matemática',questoes:7,peso:14,topicos:['Operações com números reais','Regra de três','Porcentagem e juros','Razão e proporção','Raciocínio lógico-matemático']},
+      {nome:'Informática',questoes:6,peso:12,topicos:['Windows 10/11','Microsoft Office','Internet e e-mail','Segurança da informação']},
+      {nome:'Constituição Federal',questoes:7,peso:14,topicos:['Direitos e garantias fundamentais (art. 5º)','Segurança pública (art. 144)','Organização do Estado','Remédios constitucionais']},
+      {nome:'Direito Penal',questoes:6,peso:12,topicos:['Tipicidade, ilicitude e culpabilidade','Crimes contra a pessoa','Crimes contra o patrimônio','Tentativa e consumação','Penas']},
+      {nome:'Processo Penal',questoes:5,peso:10,topicos:['Inquérito policial','Prisão em flagrante','Ação penal','Provas','Habeas corpus']},
+      {nome:'Legislação Específica BM-RS',questoes:6,peso:12,topicos:['LC 10.990/1997 (Estatuto BM)','Regulamento Disciplinar da BM','Hierarquia e disciplina','Deveres e proibições','Art. 144 CF']},
+      {nome:'Conhecimentos Gerais',questoes:5,peso:10,topicos:['Atualidades RS','Geografia do RS','História do RS','Meio ambiente']},
+    ],dicas:'Prova de 50 questões. Mínimo 60 pontos E 20% por disciplina. FUNDATEC cobra legislação específica BM e atualidades RS.'},
+  'Polícia Civil RS':{banca:'FUNDATEC / FAURGS',totalQuestoes:80,notaCorte:60,fonte:'Histórico editais PC-RS',
+    materias:[
+      {nome:'Língua Portuguesa',questoes:10,peso:12.5,topicos:['Interpretação de texto','Redação oficial','Gramática normativa']},
+      {nome:'Direito Constitucional',questoes:12,peso:15,topicos:['Direitos fundamentais (art. 5º)','Segurança pública (art. 144)','Organização dos Poderes']},
+      {nome:'Direito Penal',questoes:14,peso:17.5,topicos:['Teoria do crime','Crimes em espécie (CP)','Lei de Drogas','Estatuto do Desarmamento']},
+      {nome:'Processo Penal',questoes:12,peso:15,topicos:['Inquérito policial','Ação penal','Prisões cautelares','Provas']},
+      {nome:'Direito Administrativo',questoes:10,peso:12.5,topicos:['Atos administrativos','Poderes da administração','Licitações (Lei 14.133/21)']},
+      {nome:'Legislação Específica PC-RS',questoes:8,peso:10,topicos:['Estatuto dos Funcionários RS','Lei Orgânica da PC-RS','Código de Ética Policial']},
+      {nome:'Informática',questoes:7,peso:8.75,topicos:['Sistemas operacionais','Pacote Office','Internet e segurança']},
+      {nome:'Raciocínio Lógico',questoes:7,peso:8.75,topicos:['Lógica proposicional','Conjuntos','Probabilidade']},
+    ],dicas:'Direito Penal + Processo Penal = 33% da prova. Foque em crimes em espécie e prisões cautelares.'},
+  'Polícia Federal':{banca:'CEBRASPE',totalQuestoes:120,notaCorte:50,fonte:'Edital PF 2025 — CEBRASPE',
+    materias:[
+      {nome:'Língua Portuguesa',questoes:20,peso:16.7,topicos:['Interpretação de textos','Gramática','Redação oficial']},
+      {nome:'Raciocínio Lógico e Matemática',questoes:20,peso:16.7,topicos:['Lógica proposicional','Raciocínio lógico-quantitativo','Probabilidade']},
+      {nome:'Direito Constitucional',questoes:15,peso:12.5,topicos:['Direitos e garantias fundamentais','Organização do Estado','Segurança pública (art. 144)']},
+      {nome:'Direito Administrativo',questoes:15,peso:12.5,topicos:['Princípios da administração','Licitações (Lei 14.133/21)','Servidores (Lei 8.112/90)']},
+      {nome:'Direito Penal',questoes:15,peso:12.5,topicos:['Crimes no CP','Lei de Drogas','Lavagem de dinheiro (Lei 9.613/98)']},
+      {nome:'Direito Processual Penal',questoes:15,peso:12.5,topicos:['Inquérito policial','Prisão e liberdade','Lei 12.850/13']},
+      {nome:'Legislação Especial',questoes:10,peso:8.3,topicos:['Estatuto do Desarmamento','Lei de Interceptações','Direitos Humanos']},
+      {nome:'Informática',questoes:10,peso:8.3,topicos:['Segurança da informação','Redes','Forense digital']},
+    ],dicas:'CEBRASPE: errar desconta ponto. Legislação Especial e Forense Digital são diferenciais.'},
+  'PRF - Polícia Rodoviária Federal':{banca:'CEBRASPE',totalQuestoes:120,notaCorte:35,fonte:'Edital PRF 2021 — referência 2026',
+    materias:[
+      {nome:'Língua Portuguesa',questoes:20,peso:16.7,topicos:['Interpretação de textos','Gramática normativa','Redação oficial']},
+      {nome:'Raciocínio Lógico-Matemático',questoes:20,peso:16.7,topicos:['Lógica proposicional','Raciocínio quantitativo','Probabilidade']},
+      {nome:'Legislação de Trânsito',questoes:30,peso:25,topicos:['CTB completo','Infrações e penalidades','Sinalização viária','Resoluções CONTRAN']},
+      {nome:'Direito Constitucional',questoes:10,peso:8.3,topicos:['Direitos fundamentais','Segurança pública (art. 144)']},
+      {nome:'Direito Administrativo',questoes:10,peso:8.3,topicos:['Princípios da administração','Servidores (Lei 8.112/90)']},
+      {nome:'Direito Penal e Processual Penal',questoes:10,peso:8.3,topicos:['Crimes de trânsito (CTB)','Inquérito policial','Prisão em flagrante']},
+      {nome:'Física',questoes:10,peso:8.3,topicos:['Cinemática','Dinâmica','Energia e trabalho']},
+      {nome:'Informática',questoes:5,peso:4.2,topicos:['Pacote Office','Segurança e redes']},
+    ],dicas:'CTB = 25% da prova. CEBRASPE desconta por erro.'},
+  'Polícia Civil SC':{banca:'FEPESE / IESES',totalQuestoes:80,notaCorte:60,fonte:'Histórico editais PC-SC',
+    materias:[
+      {nome:'Língua Portuguesa',questoes:12,peso:15,topicos:['Interpretação de texto','Gramática e ortografia','Redação oficial']},
+      {nome:'Direito Constitucional',questoes:12,peso:15,topicos:['Direitos fundamentais','Organização do Estado SC e Federal']},
+      {nome:'Direito Penal',questoes:14,peso:17.5,topicos:['Teoria do crime','Crimes em espécie','Lei de Drogas']},
+      {nome:'Processo Penal',questoes:12,peso:15,topicos:['Inquérito policial','Provas','Prisões']},
+      {nome:'Direito Administrativo',questoes:10,peso:12.5,topicos:['Princípios e poderes','Licitações','Servidores públicos SC']},
+      {nome:'Legislação Específica PC-SC',questoes:10,peso:12.5,topicos:['Estatuto Servidores SC','Lei Orgânica PC-SC','Código de Ética']},
+      {nome:'Informática',questoes:10,peso:12.5,topicos:['Sistemas operacionais','Pacote Office','Internet']},
+    ],dicas:'Direito Penal + Processo Penal = 32%. Legislação específica de SC diferencia os aprovados.'},
+  'Polícia Penal':{banca:'IBADE / VUNESP / CESPE',totalQuestoes:60,notaCorte:60,fonte:'Histórico editais Polícia Penal',
+    materias:[
+      {nome:'Língua Portuguesa',questoes:10,peso:16.7,topicos:['Interpretação de texto','Gramática normativa','Redação oficial']},
+      {nome:'Direito Constitucional',questoes:10,peso:16.7,topicos:['Direitos fundamentais','Segurança pública (art. 144)']},
+      {nome:'Direito Penal',questoes:10,peso:16.7,topicos:['Parte geral do CP','Crimes em espécie','Lei de Execução Penal']},
+      {nome:'Lei de Execução Penal (LEP)',questoes:10,peso:16.7,topicos:['Direitos e deveres do preso','Progressão de regime','Remição da pena','Monitoração eletrônica']},
+      {nome:'Direito Administrativo',questoes:8,peso:13.3,topicos:['Princípios da administração','Atos administrativos','Servidores']},
+      {nome:'Legislação Específica',questoes:7,peso:11.7,topicos:['Estatuto do servidor','Código de Ética do Agente Penal','Direitos Humanos no sistema prisional']},
+      {nome:'Informática',questoes:5,peso:8.3,topicos:['Pacote Office básico','Internet e segurança']},
+    ],dicas:'LEP é o grande diferencial — matéria exclusiva da Polícia Penal. Quem domina a LEP sai na frente.'},
+  'Polícia Militar SP':{banca:'VUNESP',totalQuestoes:80,notaCorte:60,fonte:'Histórico editais PM-SP',
+    materias:[
+      {nome:'Língua Portuguesa',questoes:12,peso:15,topicos:['Interpretação de texto','Gramática','Ortografia e acentuação']},
+      {nome:'Matemática',questoes:10,peso:12.5,topicos:['Aritmética e álgebra','Geometria plana','Porcentagem']},
+      {nome:'Atualidades e Cidadania',questoes:8,peso:10,topicos:['Atualidades nacionais SP','Direitos Humanos','ECA']},
+      {nome:'Direito Constitucional',questoes:12,peso:15,topicos:['Direitos fundamentais','Segurança pública (art. 144)','Poder Executivo SP']},
+      {nome:'Direito Penal e Processo Penal',questoes:14,peso:17.5,topicos:['Crimes em espécie','Teoria do crime','Inquérito policial','Prisão em flagrante']},
+      {nome:'Legislação PM-SP',questoes:12,peso:15,topicos:['Estatuto dos Policiais-Militares SP','Regulamento Disciplinar PM-SP','Código PM']},
+      {nome:'Informática',questoes:6,peso:7.5,topicos:['Windows','Pacote Office','Internet']},
+      {nome:'Inglês',questoes:6,peso:7.5,topicos:['Interpretação de textos','Vocabulário básico']},
+    ],dicas:'VUNESP cobra muito interpretação de texto. Legislação PM-SP tem peso alto (15%).'},
+};
+
+/* ═══════════════════════════
+   STORAGE
+═══════════════════════════ */
+function getStorage(){
+  try{return JSON.parse(localStorage.getItem('ca_v3')||'null')||{streak:0,lastDay:'',totalQ:0,totalC:0,sims:0,byMat:{},usedQIds:{},activity:{}};}
+  catch(e){return{streak:0,lastDay:'',totalQ:0,totalC:0,sims:0,byMat:{},usedQIds:{},activity:{}};}
+}
+function saveStorage(d){try{localStorage.setItem('ca_v3',JSON.stringify(d));}catch(e){}}
+function recordSession(results,tema){
+  const d=getStorage();
+  const today=new Date().toDateString(),yest=new Date(Date.now()-86400000).toDateString();
+  if(d.lastDay!==today){d.streak=d.lastDay===yest?d.streak+1:1;d.lastDay=today;}
+  results.forEach(r=>{
+    d.totalQ++;if(r.ok)d.totalC++;
+    const mat=r.materia||tema;
+    if(!d.byMat[mat])d.byMat[mat]={total:0,correct:0};
+    d.byMat[mat].total++;if(r.ok)d.byMat[mat].correct++;
+  });
+  d.activity[new Date().toISOString().slice(0,10)]=(d.activity[new Date().toISOString().slice(0,10)]||0)+results.length;
+  saveStorage(d);
+}
+function recordSim(){const d=getStorage();d.sims=(d.sims||0)+1;saveStorage(d);}
+function clearHistory(){localStorage.removeItem('ca_v3');updateHomeStats();goTo('home');}
+function hashQ(q){let h=0;for(let i=0;i<Math.min(q.length,60);i++){h=(h<<5)-h+q.charCodeAt(i);h|=0;}return h;}
+function markUsed(qs){
+  const d=getStorage();
+  qs.forEach(q=>{d.usedQIds[String(hashQ(q.q))]=Date.now();});
+  const keys=Object.keys(d.usedQIds).sort((a,b)=>d.usedQIds[a]-d.usedQIds[b]);
+  if(keys.length>200)keys.slice(0,keys.length-200).forEach(k=>delete d.usedQIds[k]);
+  saveStorage(d);
+}
+function getUsedHashes(){return getStorage().usedQIds||{};}
+function getWeakMats(){
+  const d=getStorage();
+  return Object.entries(d.byMat||{}).filter(([,v])=>v.total>=3)
+    .sort((a,b)=>(a[1].correct/a[1].total)-(b[1].correct/b[1].total))
+    .slice(0,3).map(([k])=>k);
+}
+function salvarConcursoMapa(val){if(!val)return;const d=getStorage();d.concurso=val;saveStorage(d);}
+
+/* CRON STORAGE */
+function getCronStorage(){
+  try{return JSON.parse(localStorage.getItem('ca_cron')||'null')||{dias:[],concluidos:{},concurso:'',totalDias:30,horas:4};}
+  catch(e){return{dias:[],concluidos:{},concurso:'',totalDias:30,horas:4};}
+}
+function saveCronStorage(d){try{localStorage.setItem('ca_cron',JSON.stringify(d));}catch(e){}}
+
+/* ═══════════════════════════
+   MODAL / SIDEBAR
+═══════════════════════════ */
+function showUpgradeModal(){document.getElementById('upgrade-modal').style.display='flex';}
+function closeUpgradeModal(){document.getElementById('upgrade-modal').style.display='none';}
+function toggleSidebar(){
+  const sb=document.getElementById('sidebar');
+  const ov=document.getElementById('sidebar-overlay');
+  sb.classList.toggle('open');
+  ov.classList.toggle('visible');
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('visible');
+}
+
+/* ═══════════════════════════
+   UI UPDATES
+═══════════════════════════ */
+function updateHomeStats(){
+  const d=getStorage();
+  document.getElementById('hs-total').textContent=d.totalQ;
+  document.getElementById('hs-taxa').textContent=d.totalQ>0?Math.round(d.totalC/d.totalQ*100)+'%':'—';
+  document.getElementById('hs-streak').textContent=d.streak;
+}
+function updateQuizHeader(){
+  const d=getStorage();
+  const key=new Date().toISOString().slice(0,10);
+  document.getElementById('qzh-feitas').textContent=d.activity[key]||0;
+  document.getElementById('qzh-taxa').textContent=d.totalQ>0?Math.round(d.totalC/d.totalQ*100)+'%':'—';
+  document.getElementById('qzh-streak').textContent=d.streak;
+  document.getElementById('qz-streak-tb').textContent=d.streak>0?d.streak+'🔥':'';
+}
+function renderHotTopics(tema){
+  const box=document.getElementById('hot-topics-box'),items=document.getElementById('ht-items');
+  const ht=HOT_TOPICS[tema];
+  if(!ht){box.style.display='none';return;}
+  box.style.display='block';
+  items.innerHTML=ht.map(h=>`<span class="ht-item">${h.t}<span class="ht-pct">${h.p}%</span></span>`).join('');
+}
+function renderHistorico(){
+  const d=getStorage();
+  document.getElementById('hist-streak-num').textContent=d.streak;
+  document.getElementById('hist-streak-sub').textContent=d.streak>0?`${d.streak} dia${d.streak>1?'s':''} consecutivos`:'Comece hoje!';
+  const dots=document.getElementById('hist-dots');dots.innerHTML='';
+  for(let i=0;i<7;i++){const el=document.createElement('div');el.className='str-dot'+(i<Math.min(d.streak,7)?' done':'');dots.appendChild(el);}
+  document.getElementById('hov-total').textContent=d.totalQ;
+  document.getElementById('hov-acertos').textContent=d.totalC;
+  document.getElementById('hov-taxa').textContent=d.totalQ>0?Math.round(d.totalC/d.totalQ*100)+'%':'—';
+  document.getElementById('hov-sims').textContent=d.sims||0;
+  const list=document.getElementById('mat-hist-list');
+  const mats=Object.entries(d.byMat||{}).sort((a,b)=>b[1].total-a[1].total);
+  if(!mats.length){list.innerHTML='<div style="font-family:\'IBM Plex Mono\',monospace;font-size:11px;color:var(--cr3);padding:16px 0">Nenhuma sessão registrada ainda.</div>';return;}
+  list.innerHTML=mats.map(([mat,v])=>{
+    const pct=Math.round(v.correct/v.total*100);
+    const col=pct>=70?'var(--ol4)':pct>=50?'var(--kh3)':'var(--red)';
+    return `<div class="mh-row"><div class="mh-top"><span class="mh-name">${mat}</span><span class="mh-pct" style="color:${col}">${pct}%</span></div><div class="mh-counts">${v.correct}/${v.total} corretas</div><div class="mh-bar-wrap"><div class="mh-bar" style="width:${pct}%;background:${col}"></div></div></div>`;
+  }).join('');
+  const cal=document.getElementById('cal-grid');cal.innerHTML='';
+  const today=new Date();
+  for(let i=34;i>=0;i--){
+    const dt=new Date(today);dt.setDate(dt.getDate()-i);
+    const key=dt.toISOString().slice(0,10);const count=d.activity[key]||0;
+    const cls=count===0?'':count<10?' d1':count<20?' d2':' d3';
+    const el=document.createElement('div');el.className='cal-day'+cls;el.title=key+(count>0?': '+count+' q':'');cal.appendChild(el);
+  }
+}
+
+/* ═══════════════════════════
+   NAVEGAÇÃO
+═══════════════════════════ */
+function goTo(s){
+  document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
+  document.getElementById(s).classList.add('active');
+  closeSidebar();
+  if(s==='home')updateHomeStats();
+  if(s==='quiz'){updateQuizHeader();renderHotTopics(null);}
+  if(s==='historico')renderHistorico();
+  if(s==='cronograma')loadCronSalvo();
+}
+
+/* ═══════════════════════════
+   CHIPS INIT
+═══════════════════════════ */
+let qzTema=null,mpTema=null,fcTema=null;
+function initChips(){
+  [['qchips',0],['mpchips',1],['fcchips',2]].forEach(([id,gi])=>{
+    const g=document.getElementById(id);if(!g)return;
+    TEMAS.forEach(t=>{
+      const b=document.createElement('button');b.className='chip';b.textContent=t;
+      b.onclick=()=>{
+        g.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));b.classList.add('on');
+        if(gi===0){qzTema=t;document.getElementById('qzstart').disabled=false;renderHotTopics(t);}
+        if(gi===1){mpTema=t;document.getElementById('mpstart').disabled=false;}
+        if(gi===2){fcTema=t;document.getElementById('fcstart').disabled=false;}
+      };g.appendChild(b);
+    });
+  });
+}
+initChips();
+
+/* ═══════════════════════════
+   API UNIFICADA
+═══════════════════════════ */
+async function ai(prompt){
+  const resp=await fetch('/api/chat',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})
+  });
+  const data=await resp.json();
+  if(resp.status===429)throw new Error('UPGRADE_REQUIRED');
+  if(!resp.ok)throw new Error(data.error||'Erro na API');
+  return data.content[0].text;
+}
+
+/* ═══════════════════════════
+   QUIZ
+═══════════════════════════ */
+let qzQs=[],qzIdx=0,qzResults=[];
+async function startQuiz(forceTema){
+  const tema=forceTema||qzTema,qtd=document.getElementById('qzqtd').value;
+  const ht=HOT_TOPICS[tema];
+  const htHint=ht?`\nPriorize: ${ht.map(h=>h.t+' ('+h.p+'%)').join(', ')}`:'';
+  const usedHint=Object.keys(getUsedHashes()).length>0?'\nNÃO repita questões similares às anteriores. Varie artigos.':'';
+  document.getElementById('qz-setup').style.display='none';
+  document.getElementById('qz-load').style.display='flex';
+  qzQs=[];qzIdx=0;qzResults=[];
+  try{
+    const raw=await ai(`Especialista em concursos policiais. Gere exatamente ${qtd} questões de múltipla escolha sobre "${tema}" para Polícia/Brigada Militar.${htHint}${usedHint}\nEstilo CESPE/VUNESP. Mix: lei seca, doutrina, casos práticos. Não repita artigos.\nJSON puro:\n[{"q":"enunciado","opts":["A) ...","B) ...","C) ...","D) ..."],"correct":0,"exp":"Gabarito: X. Art. Y — explicação","materia":"${tema}","subtema":"tópico","banca":"CESPE"}]`);
+    qzQs=JSON.parse(raw.replace(/```json|```/g,'').trim());markUsed(qzQs);
+  }catch(e){
+    document.getElementById('qz-load').style.display='none';
+    document.getElementById('qz-q').style.display='block';
+    if(e.message==='UPGRADE_REQUIRED'){showUpgradeModal();document.getElementById('qz-setup').style.display='block';document.getElementById('qz-q').style.display='none';return;}
+    document.getElementById('qz-q').innerHTML='<div class="err">Erro ao carregar questões.</div><button class="sbtn ghost" style="margin-top:14px" onclick="resetQuiz()">VOLTAR</button>';
+    return;
+  }
+  document.getElementById('qz-load').style.display='none';
+  document.getElementById('qz-q').style.display='block';
+  renderQzQ();
+}
+async function startQuizFraco(){
+  const weak=getWeakMats();
+  if(!weak.length){alert('Faça pelo menos 3 questões por matéria para identificar pontos fracos!');return;}
+  qzTema=weak[0];document.getElementById('qzqtd').value='20';await startQuiz(weak[0]);
+}
+function renderQzQ(){
+  if(qzIdx>=qzQs.length){showQzScore();return;}
+  const q=qzQs[qzIdx],pct=Math.round(qzIdx/qzQs.length*100);
+  document.getElementById('qz-q').innerHTML=`
+    <div class="qprog"><span>QUESTÃO ${qzIdx+1} / ${qzQs.length}</span><span>${q.banca||''}</span></div>
+    <div class="qbar"><div class="qfill" style="width:${pct}%"></div></div>
+    ${q.subtema?`<div class="q-materia-tag">${q.subtema}</div>`:''}
+    <div class="qtxt">${q.q}</div>
+    <div class="opts">${q.opts.map((o,i)=>`<button class="opt" onclick="ansQ(${i})" id="o${i}"><span class="olet">${'ABCD'[i]}</span><span>${o.replace(/^[A-D]\)\s*/,'')}</span></button>`).join('')}</div>
+    <div class="fbk" id="fbk"><div class="fbk-lei">GABARITO COMENTADO</div>${q.exp}</div>
+    <button class="nxt" id="nxt" onclick="qzIdx++;renderQzQ()">PRÓXIMA →</button>`;
+}
+function ansQ(i){
+  const q=qzQs[qzIdx];
+  document.querySelectorAll('.opt').forEach((b,j)=>{b.disabled=true;if(j===q.correct)b.classList.add('ok');else if(j===i)b.classList.add('no');});
+  qzResults.push({ok:i===q.correct,materia:q.materia||qzTema});
+  document.getElementById('fbk').style.display='block';document.getElementById('nxt').style.display='inline-block';
+}
+function showQzScore(){
+  recordSession(qzResults,qzTema);updateHomeStats();
+  const tot=qzResults.length,c=qzResults.filter(r=>r.ok).length,pct=Math.round(c/tot*100),ok=pct>=70;
+  const d=getStorage();
+  const topMats=Object.entries(d.byMat||{}).sort((a,b)=>b[1].total-a[1].total).slice(0,5);
+  const bkd=topMats.map(([mat,v])=>{const p=Math.round(v.correct/v.total*100);const col=p>=70?'var(--ol4)':p>=50?'var(--kh3)':'var(--red)';return `<div class="sb-row"><span class="sb-mat">${mat}</span><div class="sb-bar-wrap"><div class="sb-bar" style="width:${p}%;background:${col}"></div></div><span class="sb-pct" style="color:${col}">${p}%</span></div>`;}).join('');
+  document.getElementById('qz-q').style.display='none';document.getElementById('qz-score').style.display='block';
+  document.getElementById('qz-score').innerHTML=`<div class="score-wrap"><div class="score-verdict" style="color:${ok?'#8ef5b4':'#f5a0a0'}">${ok?'RESULTADO POSITIVO':'CONTINUE ESTUDANDO'}</div><div class="score-num">${pct}%</div><div class="score-sub">${c} DE ${tot} CORRETAS</div>${bkd?`<div style="margin:20px 0"><div class="section-label">DESEMPENHO POR MATÉRIA</div><div class="score-breakdown">${bkd}</div></div>`:''}<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><button class="sbtn" onclick="resetQuiz()">NOVO QUIZ</button><button class="sbtn ghost" onclick="goTo('historico')">HISTÓRICO</button></div></div>`;
+}
+function resetQuiz(){
+  document.getElementById('qz-score').style.display='none';document.getElementById('qz-q').style.display='none';document.getElementById('qz-setup').style.display='block';
+  qzTema=null;document.querySelectorAll('#qchips .chip').forEach(b=>b.classList.remove('on'));document.getElementById('qzstart').disabled=true;
+  document.getElementById('hot-topics-box').style.display='none';updateQuizHeader();
+}
+
+/* ═══════════════════════════
+   FLASHCARDS
+═══════════════════════════ */
+let fcCards=[],fcIdx=0,fcFlipped=false,fcAcertos=0,fcErros=0;
+async function startFlashcards(){
+  document.getElementById('fc-setup').style.display='none';
+  document.getElementById('fc-load').style.display='flex';
+  fcCards=[];fcIdx=0;fcFlipped=false;fcAcertos=0;fcErros=0;
+  try{
+    const raw=await ai(`Especialista em concursos policiais. Gere 20 flashcards sobre "${fcTema}" para concursos policiais.\nCada card: frente = conceito/pergunta direta, verso = definição/resposta com base legal.\nInclua artigos e entendimentos STF/STJ quando relevante.\nJSON puro:\n[{"pergunta":"Art. X ou conceito","resposta":"Definição completa com base legal","subtema":"tópico"}]`);
+    fcCards=JSON.parse(raw.replace(/```json|```/g,'').trim());
+  }catch(e){
+    document.getElementById('fc-load').style.display='none';
+    document.getElementById('fc-setup').style.display='block';
+    if(e.message==='UPGRADE_REQUIRED')showUpgradeModal();
+    else alert('Erro ao gerar flashcards.');
+    return;
+  }
+  document.getElementById('fc-load').style.display='none';
+  document.getElementById('fc-session').style.display='block';
+  renderFlashcard();
+}
+function renderFlashcard(){
+  if(fcIdx>=fcCards.length){showFcScore();return;}
+  const c=fcCards[fcIdx];
+  document.getElementById('fc-prog').innerHTML=`<span>CARD ${fcIdx+1} / ${fcCards.length}</span><span>${c.subtema||''}</span>`;
+  document.getElementById('fc-subtema').textContent=c.subtema||fcTema;
+  document.getElementById('fc-pergunta').textContent=c.pergunta;
+  document.getElementById('fc-resposta').textContent=c.resposta;
+  document.getElementById('fc-card').classList.remove('flipped');
+  document.getElementById('fc-actions').style.display='none';
+  fcFlipped=false;
+}
+function flipCard(){
+  if(fcFlipped)return;
+  document.getElementById('fc-card').classList.add('flipped');
+  document.getElementById('fc-actions').style.display='flex';
+  fcFlipped=true;
+}
+function respFlash(tipo){
+  if(tipo==='acertei')fcAcertos++;
+  else if(tipo==='errei')fcErros++;
+  fcIdx++;
+  renderFlashcard();
+}
+function showFcScore(){
+  const tot=fcCards.length,pct=Math.round(fcAcertos/tot*100),ok=pct>=70;
+  document.getElementById('fc-session').style.display='none';
+  document.getElementById('fc-score').style.display='block';
+  document.getElementById('fc-score').innerHTML=`<div class="score-wrap"><div class="score-verdict" style="color:${ok?'#8ef5b4':'#f5a0a0'}">${ok?'DOMÍNIO SÓLIDO':'REVISE OS CARDS'}</div><div class="score-num">${pct}%</div><div class="score-sub">${fcAcertos} ACERTEI — ${fcErros} ERREI — ${tot-fcAcertos-fcErros} QUASE</div><div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:20px"><button class="sbtn" onclick="resetFc()">NOVO DECK</button><button class="sbtn ghost" onclick="goTo('home')">VOLTAR</button></div></div>`;
+}
+function resetFc(){
+  document.getElementById('fc-score').style.display='none';document.getElementById('fc-session').style.display='none';document.getElementById('fc-setup').style.display='block';
+  fcTema=null;document.querySelectorAll('#fcchips .chip').forEach(b=>b.classList.remove('on'));document.getElementById('fcstart').disabled=true;
+}
+
+/* ═══════════════════════════
+   ROADMAP
+═══════════════════════════ */
+async function gerarRoadmap(){
+  const cc=document.getElementById('rmcc').value;if(!cc){alert('Selecione um concurso!');return;}
+  const h=document.getElementById('rmh').value,p=document.getElementById('rmp').value;
+  const edital=EDITAIS[cc];
+  const ds=getStorage();ds.concurso=cc;saveStorage(ds);
+  document.getElementById('rm-load').style.display='flex';document.getElementById('rm-res').innerHTML='';
+  const editalCtx=edital?`EDITAL ${cc} (${edital.fonte}):\nBanca: ${edital.banca} | ${edital.totalQuestoes}q | Corte: ${edital.notaCorte}%\n${edital.materias.map(m=>`- ${m.nome}: ${m.questoes}q (${m.peso.toFixed(0)}%)`).join('\n')}\nDica: ${edital.dicas}`:`Concurso: ${cc}`;
+  try{
+    const raw=await ai(`Cronograma para ${cc}, ${h}h/dia, ${p}.\n${editalCtx}\nDistribua matérias pelo peso real. SAB: revisão+questões. DOM: descanso.\nJSON puro:\n[{"week":"Semana 1","focus":"foco","days":[{"day":"SEG","tasks":"tópico"},{"day":"TER","tasks":"..."},{"day":"QUA","tasks":"..."},{"day":"QUI","tasks":"..."},{"day":"SEX","tasks":"..."},{"day":"SAB","tasks":"revisão+questões"},{"day":"DOM","tasks":"descanso"}]}]\n4 semanas.`);
+    renderRM(JSON.parse(raw.replace(/```json|```/g,'').trim()),edital);
+  }catch(e){
+    if(e.message==='UPGRADE_REQUIRED')showUpgradeModal();
+    else document.getElementById('rm-res').innerHTML='<div class="err">Erro ao gerar roadmap.</div>';
+  }
+  document.getElementById('rm-load').style.display='none';
+}
+function renderRM(ws,edital){
+  let edH='';
+  if(edital){
+    edH=`<div style="background:var(--ol2);border:1px solid var(--ol3);padding:14px 16px;margin-bottom:20px;"><div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--ol4);letter-spacing:2px;margin-bottom:8px;">// ${edital.fonte}</div><div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--kh3);margin-bottom:10px;">Banca: ${edital.banca} | ${edital.totalQuestoes}q | Corte: ${edital.notaCorte}%</div><div style="display:flex;flex-direction:column;gap:4px;">${edital.materias.map(m=>{const col=m.peso>=15?'var(--kh)':m.peso>=10?'var(--ol4)':'var(--cr3)';return `<div style="display:flex;align-items:center;gap:8px;"><span style="font-size:11px;color:var(--cr2);min-width:150px;flex-shrink:0;">${m.nome}</span><div style="flex:1;height:4px;background:var(--bd);"><div style="width:${Math.min(m.peso*4,100)}%;height:100%;background:${col};"></div></div><span style="font-family:'Bebas Neue',sans-serif;font-size:13px;color:${col};min-width:44px;text-align:right;">${m.questoes}Q</span></div>`;}).join('')}</div><div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--bd);font-size:11px;color:var(--kh3);font-family:'IBM Plex Mono',monospace;line-height:1.6;">⚡ ${edital.dicas}</div></div>`;
+  }
+  document.getElementById('rm-res').innerHTML=edH+'<div style="margin-top:20px">'+ws.map(w=>`<div class="wk"><div class="wkh"><span class="wkh-title">${w.week}</span><span class="wkh-focus">${w.focus}</span></div><div class="wkb">${w.days.map(d=>`<div class="dr"><span class="dl">${d.day}</span><span class="dt">${d.tasks}</span></div>`).join('')}</div></div>`).join('')+'</div>';
+}
+
+/* ═══════════════════════════
+   MAPA MENTAL
+═══════════════════════════ */
+async function gerarMapa(){
+  document.getElementById('mp-load').style.display='flex';document.getElementById('mp-res').innerHTML='';
+  const ccMapa=(document.getElementById('mpcc').value)||(getStorage().concurso||'');
+  const edital=ccMapa?EDITAIS[ccMapa]:null;
+  const matEdital=edital?edital.materias.find(m=>m.nome===mpTema||m.nome.includes(mpTema.split(' ')[0])):null;
+  const edCtx=matEdital?`Tópicos do edital (${edital.fonte}):\n${matEdital.topicos.map(t=>`- ${t}`).join('\n')}\nPeso: ${matEdital.questoes}q (${matEdital.peso.toFixed(0)}%)`:'';
+  try{
+    const raw=await ai(`Mapa mental sobre "${mpTema}" para concursos policiais.\n${edCtx}\nInclua artigos específicos, STF/STJ relevante, marque "(⚡ muito cobrado)".\nJSON puro:\n{"root":"${mpTema}","branches":[{"title":"subtema","items":["art. X — conceito","..."]}]}\n6 branches, 5-7 items cada.`);
+    renderMP(JSON.parse(raw.replace(/```json|```/g,'').trim()),matEdital,edital);
+  }catch(e){
+    if(e.message==='UPGRADE_REQUIRED')showUpgradeModal();
+    else document.getElementById('mp-res').innerHTML='<div class="err">Erro. Tente novamente.</div>';
+  }
+  document.getElementById('mp-load').style.display='none';
+}
+function renderMP(m,matEdital,edital){
+  const badge=matEdital?`<div style="background:var(--ol2);border:1px solid var(--ol);padding:8px 14px;margin-bottom:14px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--ol4);">PESO NO EDITAL: <span style="font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--kh);margin-left:8px;">${matEdital.questoes}Q (${matEdital.peso.toFixed(0)}%)</span></div>`:'';
+  const fonte=edital?`<div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:rgba(240,232,212,.2);margin-bottom:14px;">Fonte: ${edital.fonte}</div>`:'';
+  document.getElementById('mp-res').innerHTML=`<div style="margin-top:22px">${badge}${fonte}<div class="root-node">${m.root}</div><div class="brs">${m.branches.map((b,i)=>`<div class="br${i===0?' op':''}" id="br${i}"><div class="brh" onclick="toggleBr(${i})"><span>${b.title}</span><span class="bch">▼</span></div><div class="brb"><ul class="ll">${b.items.map(it=>`<li>${it}</li>`).join('')}</ul></div></div>`).join('')}</div></div>`;
+}
+function toggleBr(i){document.getElementById('br'+i).classList.toggle('op');}
+
+/* ═══════════════════════════
+   SIMULADO
+═══════════════════════════ */
+let simTimer=null,simSecs=5400,simQs=[],simIdx=0,simResults=[];
+async function startSim(){
+  const cc=document.getElementById('simcc').value,dif=document.getElementById('simdif').value;
+  const edital=EDITAIS[cc];
+  document.getElementById('sim-setup').style.display='none';document.getElementById('sim-load').style.display='flex';
+  simQs=[];simIdx=0;simResults=[];simSecs=5400;
+  const distCtx=edital?`Edital real ${cc}:\n${edital.materias.map(m=>`- ${m.nome}: ${m.questoes}q`).join('\n')}\nAdapte para 40 questões proporcionalmente.`:`Distribuição genérica: Direito Penal (8q), Processo Penal (6q), CF (7q), Leg. Específica (5q), Dir. Administrativo (5q), Ética/DH (4q), Português (5q).`;
+  try{
+    const raw=await ai(`Simulado para ${cc}, nível ${dif}.\n${distCtx}\nEXATAMENTE 40 questões estilo ${edital?edital.banca:'CESPE/VUNESP'}. Nível ${dif}: ${dif==='fácil'?'lei seca direta':dif==='difícil'?'interpretação e casos complexos':'mix direto e prático'}.\nJSON puro:\n[{"q":"enunciado","opts":["A) ...","B) ...","C) ...","D) ..."],"correct":0,"exp":"Gabarito: X. Art. Y — explicação","materia":"Direito Penal","subtema":"tópico"}]`);
+    simQs=JSON.parse(raw.replace(/```json|```/g,'').trim());recordSim();
+  }catch(e){
+    document.getElementById('sim-load').style.display='none';document.getElementById('sim-setup').style.display='block';
+    if(e.message==='UPGRADE_REQUIRED')showUpgradeModal();
+    else alert('Erro ao gerar simulado.');return;
+  }
+  document.getElementById('sim-load').style.display='none';document.getElementById('sim-prova').style.display='block';
+  startSimTimer();renderSimQ();
+}
+function startSimTimer(){simTimer=setInterval(()=>{simSecs--;if(simSecs<=0){clearInterval(simTimer);finishSim();return;}const m=Math.floor(simSecs/60).toString().padStart(2,'0'),s=(simSecs%60).toString().padStart(2,'0');const el=document.getElementById('simclk');el.textContent=`${m}:${s}`;if(simSecs<300)el.classList.add('warn');},1000);}
+function stopSim(){if(simTimer)clearInterval(simTimer);}
+function renderSimQ(){
+  if(simIdx>=simQs.length){stopSim();finishSim();return;}
+  const q=simQs[simIdx],pct=Math.round(simIdx/simQs.length*100);
+  document.getElementById('simctr').innerHTML=`<span>Q ${simIdx+1}/${simQs.length}</span>${q.materia?`<span class="sqc-mat">${q.materia}</span>`:''}`;
+  document.getElementById('sim-prog-txt').textContent=`${pct}% concluído`;
+  document.getElementById('sim-prog-fill').style.width=pct+'%';
+  document.getElementById('simqbox').innerHTML=`${q.subtema?`<div class="q-materia-tag">${q.subtema}</div>`:''}<div class="qtxt">${q.q}</div><div class="opts">${q.opts.map((o,i)=>`<button class="opt" onclick="ansSimQ(${i})" id="so${i}"><span class="olet">${'ABCD'[i]}</span><span>${o.replace(/^[A-D]\)\s*/,'')}</span></button>`).join('')}</div><div class="fbk" id="sfbk"><div class="fbk-lei">GABARITO COMENTADO</div>${q.exp}</div>`;
+  document.getElementById('simnxt').style.display='none';
+}
+function ansSimQ(i){const q=simQs[simIdx];document.querySelectorAll('.opt').forEach((b,j)=>{b.disabled=true;if(j===q.correct)b.classList.add('ok');else if(j===i)b.classList.add('no');});simResults.push({ok:i===q.correct,materia:q.materia||'Geral'});document.getElementById('sfbk').style.display='block';document.getElementById('simnxt').style.display='inline-block';}
+function simNext(){simIdx++;renderSimQ();}
+function finishSim(){
+  stopSim();recordSession(simResults,'Simulado');updateHomeStats();
+  document.getElementById('sim-prova').style.display='none';
+  const tot=simResults.length,c=simResults.filter(r=>r.ok).length,pct=Math.round(c/tot*100),ok=pct>=60;
+  const byMat={};simResults.forEach(r=>{if(!byMat[r.materia])byMat[r.materia]={total:0,correct:0};byMat[r.materia].total++;if(r.ok)byMat[r.materia].correct++;});
+  const bkd=Object.entries(byMat).map(([mat,v])=>{const p=Math.round(v.correct/v.total*100);const col=p>=60?'var(--ol4)':p>=40?'var(--kh3)':'var(--red)';return `<div class="sb-row"><span class="sb-mat">${mat}</span><div class="sb-bar-wrap"><div class="sb-bar" style="width:${p}%;background:${col}"></div></div><span class="sb-pct" style="color:${col}">${p}%</span></div>`;}).join('');
+  document.getElementById('sim-res').style.display='block';
+  document.getElementById('sim-res').innerHTML=`<div class="score-wrap"><div class="score-verdict" style="color:${ok?'#8ef5b4':'#f5a0a0'}">${ok?'APROVADO':'REPROVADO'}</div><div class="score-num">${pct}%</div><div class="score-sub">${c} DE ${tot} — CORTE: 60%</div><div style="margin:20px 0"><div class="section-label">DESEMPENHO POR MATÉRIA</div><div class="score-breakdown">${bkd}</div></div><div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><button class="sbtn" onclick="resetSim()">NOVO SIMULADO</button><button class="sbtn ghost" onclick="goTo('historico')">HISTÓRICO</button></div></div>`;
+}
+function resetSim(){document.getElementById('sim-res').style.display='none';document.getElementById('sim-setup').style.display='block';}
+
+/* ═══════════════════════════
+   FIXAÇÃO POR MATERIAL
+═══════════════════════════ */
+let fixTipo='texto',fixQs=[],fixIdx=0,fixResults=[];
+function setFixTipo(tipo){
+  fixTipo=tipo;
+  ['texto','pdf','imagem','video'].forEach(t=>{
+    document.getElementById('fix-input-'+t).style.display=t===tipo?'block':'none';
+    document.getElementById('tab-'+t).classList.toggle('on',t===tipo);
+  });
+}
+function toBase64(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=()=>rej(new Error('Falha na leitura'));r.readAsDataURL(file);});}
+document.getElementById('fix-img-file').addEventListener('change',function(){
+  const file=this.files[0];if(!file)return;
+  document.getElementById('fix-img-preview').innerHTML=`<img src="${URL.createObjectURL(file)}" style="max-width:100%;max-height:220px;border:1px solid var(--bd)">`;
+});
+document.getElementById('fix-pdf-file').addEventListener('change',function(){
+  const file=this.files[0];if(!file)return;
+  document.getElementById('fix-pdf-preview').textContent='✓ '+file.name+' ('+(file.size/1024).toFixed(0)+' KB)';
+});
+function buildFixPrompt(texto){
+  const base=texto?`Analise o conteúdo a seguir e gere exatamente 20 questões de múltipla escolha para fixação:\n\n${texto.slice(0,8000)}`:`Analise o material enviado e gere 20 questões de múltipla escolha para fixação.`;
+  return base+`\nQuestões: cobrir principais pontos, 4 alternativas, mix direto e interpretação, estilo CESPE/VUNESP.\nJSON puro:\n[{"q":"enunciado","opts":["A) ...","B) ...","C) ...","D) ..."],"correct":0,"exp":"explicação com base no material","subtema":"tópico"}]`;
+}
+async function gerarFixacao(){
+  document.getElementById('fix-setup').style.display='none';document.getElementById('fix-load').style.display='flex';
+  fixQs=[];fixIdx=0;fixResults=[];
+  try{
+    let messages;
+    if(fixTipo==='texto'){
+      const t=document.getElementById('fix-texto').value.trim();
+      if(!t)throw new Error('Nenhum texto informado');
+      messages=[{role:'user',content:buildFixPrompt(t)}];
+    }else if(fixTipo==='video'){
+      const t=document.getElementById('fix-video-texto').value.trim();
+      if(!t)throw new Error('Nenhuma transcrição informada');
+      messages=[{role:'user',content:buildFixPrompt(t)}];
+    }else if(fixTipo==='imagem'){
+      const file=document.getElementById('fix-img-file').files[0];
+      if(!file)throw new Error('Nenhuma imagem selecionada');
+      const b64=await toBase64(file);
+      messages=[{role:'user',content:[{type:'image',source:{type:'base64',media_type:file.type,data:b64}},{type:'text',text:buildFixPrompt('')}]}];
+    }else{
+      const file=document.getElementById('fix-pdf-file').files[0];
+      if(!file)throw new Error('Nenhum PDF selecionado');
+      const b64=await toBase64(file);
+      messages=[{role:'user',content:[{type:'document',source:{type:'base64',media_type:'application/pdf',data:b64}},{type:'text',text:buildFixPrompt('')}]}];
+    }
+    const resp=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages})});
+    const data=await resp.json();
+    if(resp.status===429)throw new Error('UPGRADE_REQUIRED');
+    if(!resp.ok)throw new Error(data.error||'Erro na API');
+    fixQs=JSON.parse(data.content[0].text.replace(/```json|```/g,'').trim());
+  }catch(e){
+    document.getElementById('fix-load').style.display='none';
+    if(e.message==='UPGRADE_REQUIRED'){showUpgradeModal();document.getElementById('fix-setup').style.display='block';return;}
+    document.getElementById('fix-q').style.display='block';
+    document.getElementById('fix-q').innerHTML=`<div class="err">Erro: ${e.message}</div><button class="sbtn ghost" style="margin-top:12px" onclick="resetFixacao()">VOLTAR</button>`;
+    return;
+  }
+  document.getElementById('fix-load').style.display='none';document.getElementById('fix-q').style.display='block';renderFixQ();
+}
+function renderFixQ(){
+  if(fixIdx>=fixQs.length){showFixScore();return;}
+  const q=fixQs[fixIdx],pct=Math.round(fixIdx/fixQs.length*100);
+  document.getElementById('fix-q').innerHTML=`<div class="qprog"><span>QUESTÃO ${fixIdx+1} / ${fixQs.length}</span><span>FIXAÇÃO</span></div><div class="qbar"><div class="qfill" style="width:${pct}%"></div></div>${q.subtema?`<div class="q-materia-tag">${q.subtema}</div>`:''}<div class="qtxt">${q.q}</div><div class="opts">${q.opts.map((o,i)=>`<button class="opt" onclick="ansFixQ(${i})" id="fo${i}"><span class="olet">${'ABCD'[i]}</span><span>${o.replace(/^[A-D]\)\s*/,'')}</span></button>`).join('')}</div><div class="fbk" id="fixfbk"><div class="fbk-lei">GABARITO COMENTADO</div>${q.exp}</div><button class="nxt" id="fixnxt" onclick="fixIdx++;renderFixQ()">PRÓXIMA →</button>`;
+}
+function ansFixQ(i){const q=fixQs[fixIdx];document.querySelectorAll('.opt').forEach((b,j)=>{b.disabled=true;if(j===q.correct)b.classList.add('ok');else if(j===i)b.classList.add('no');});fixResults.push({ok:i===q.correct,materia:q.subtema||'Material enviado'});document.getElementById('fixfbk').style.display='block';document.getElementById('fixnxt').style.display='inline-block';}
+function showFixScore(){
+  recordSession(fixResults,'Fixação por Material');updateHomeStats();
+  const tot=fixResults.length,c=fixResults.filter(r=>r.ok).length,pct=Math.round(c/tot*100),ok=pct>=70;
+  document.getElementById('fix-q').style.display='none';document.getElementById('fix-score').style.display='block';
+  document.getElementById('fix-score').innerHTML=`<div class="score-wrap"><div class="score-verdict" style="color:${ok?'#8ef5b4':'#f5a0a0'}">${ok?'MATERIAL DOMINADO':'REVISE O MATERIAL'}</div><div class="score-num">${pct}%</div><div class="score-sub">${c} DE ${tot} CORRETAS</div><div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px"><button class="sbtn" onclick="resetFixacao()">NOVO MATERIAL</button><button class="sbtn ghost" onclick="goTo('historico')">HISTÓRICO</button></div></div>`;
+}
+function resetFixacao(){document.getElementById('fix-score').style.display='none';document.getElementById('fix-q').style.display='none';document.getElementById('fix-setup').style.display='block';}
+
+/* ═══════════════════════════
+   CRONOGRAMA DIÁRIO
+═══════════════════════════ */
+let cronDias=[],cronIdx=0;
+
+async function gerarCronograma(){
+  const cc=document.getElementById('croncc').value;if(!cc){alert('Selecione um concurso!');return;}
+  const horas=document.getElementById('cronh').value;
+  const totalDias=parseInt(document.getElementById('cronp').value);
+  const edital=EDITAIS[cc];
+  document.getElementById('cron-setup').style.display='none';
+  document.getElementById('cron-load').style.display='flex';
+  const edCtx=edital?`Edital: ${cc} (${edital.fonte})\nBanca: ${edital.banca}\nMatérias:\n${edital.materias.map(m=>`- ${m.nome}: ${m.questoes}q (${m.peso}%) — ${m.topicos.slice(0,3).join(', ')}`).join('\n')}`:`Concurso: ${cc}`;
+  try{
+    const raw=await ai(`Cronograma de estudos dia a dia para ${cc}.\n${edCtx}\nHoras/dia: ${horas}h | Plano: primeiros 7 dias de um plano de ${totalDias} dias.\nPara CADA dia:\n- titulo: "1º Dia"\n- materia: matéria principal\n- metas: lista de metas específicas\n- topicos: lista de tópicos\n- atividades: lista de atividades\n- resumo: resumo teórico (2-3 parágrafos)\nDistribua matérias pelo peso no edital.\nJSON puro:\n[{"titulo":"1º Dia","materia":"...","metas":["..."],"topicos":["..."],"atividades":["..."],"resumo":"..."}]`);
+    cronDias=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    const cs=getCronStorage();
+    cs.dias=cronDias;cs.concurso=cc;cs.totalDias=totalDias;cs.horas=horas;cs.concluidos={};
+    saveCronStorage(cs);
+  }catch(e){
+    document.getElementById('cron-load').style.display='none';
+    document.getElementById('cron-setup').style.display='block';
+    if(e.message==='UPGRADE_REQUIRED')showUpgradeModal();
+    else alert('Erro ao gerar cronograma.');return;
+  }
+  document.getElementById('cron-load').style.display='none';
+  cronIdx=0;
+  renderCronDia();
+  document.getElementById('cron-content').style.display='block';
+}
+
+function loadCronSalvo(){
+  const cs=getCronStorage();
+  if(cs.dias&&cs.dias.length){
+    cronDias=cs.dias;cronIdx=0;
+    renderCronDia();
+    document.getElementById('cron-setup').style.display='none';
+    document.getElementById('cron-content').style.display='block';
+  }
+}
+
+function cronNav(dir){
+  if(dir===-1&&cronIdx>0){cronIdx--;renderCronDia();return;}
+  if(dir===1&&cronIdx<cronDias.length-1){cronIdx++;renderCronDia();return;}
+  if(dir===1&&cronIdx>=cronDias.length-1){carregarMaisDias();return;}
+}
+
+async function carregarMaisDias(){
+  const cs=getCronStorage();
+  const cc=cs.concurso,edital=EDITAIS[cc];
+  const inicio=cronDias.length+1;
+  const totalPlano=cs.totalDias||30;
+  if(cronDias.length>=totalPlano){alert('Cronograma completo! Todos os '+totalPlano+' dias foram gerados.');return;}
+  const diasRestantes=Math.min(7,totalPlano-cronDias.length);
+  document.getElementById('cron-metas').innerHTML='<div class="ld"><div class="sp"></div>Gerando próximos '+diasRestantes+' dias...</div>';
+  const edCtx=edital?`Edital: ${cc}\nMatérias: ${edital.materias.map(m=>m.nome+' ('+m.peso+'%)').join(', ')}`:`Concurso: ${cc}`;
+  try{
+    const raw=await ai(`Continue o cronograma para ${cc}.\n${edCtx}\nHoras/dia: ${cs.horas||4}\nJá foram gerados ${cronDias.length} dias.\nGere os dias ${inicio} a ${inicio+diasRestantes-1}.\nMesmo formato JSON:\n[{"titulo":"${inicio}º Dia","materia":"...","metas":["..."],"topicos":["..."],"atividades":["..."],"resumo":"..."}]`);
+    const novos=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    cronDias=cronDias.concat(novos);
+    cs.dias=cronDias;saveCronStorage(cs);
+    cronIdx=cronDias.length-novos.length;
+    renderCronDia();
+  }catch(e){
+    if(e.message==='UPGRADE_REQUIRED')showUpgradeModal();
+    else alert('Erro ao carregar mais dias.');
+    renderCronDia();
+  }
+}
+
+function toggleCronDia(){
+  const cs=getCronStorage();
+  if(!cs.concluidos)cs.concluidos={};
+  if(cs.concluidos[cronIdx])delete cs.concluidos[cronIdx];
+  else cs.concluidos[cronIdx]=Date.now();
+  saveCronStorage(cs);
+  renderCronDia();
+}
+
+function renderCronDia(){
+  if(!cronDias.length)return;
+  const dia=cronDias[cronIdx];
+  document.getElementById('cron-dia-label').textContent=dia.titulo||((cronIdx+1)+'º DIA');
+  document.getElementById('cron-prev').style.visibility=cronIdx>0?'visible':'hidden';
+  document.getElementById('cron-next').textContent=cronIdx<cronDias.length-1?'Próximo →':'Carregar mais →';
+  const cs=getCronStorage();
+  const done=cs.concluidos&&cs.concluidos[cronIdx];
+  const check=document.getElementById('cron-check');
+  check.checked=!!done;
+  const bg=document.getElementById('cron-toggle-bg');
+  const dot=document.getElementById('cron-toggle-dot');
+  if(done){bg.style.background='var(--ol3)';dot.style.transform='translateX(18px)';dot.style.background='var(--kh)';}
+  else{bg.style.background='var(--bd)';dot.style.transform='none';dot.style.background='var(--cr3)';}
+  // Metas
+  let metasHtml=`<div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--kh3);margin-bottom:8px;">METAS DO DIA</div>`;
+  if(dia.materia)metasHtml+=`<div style="font-size:13px;font-weight:500;color:var(--kh);margin-bottom:8px;">${dia.materia}</div>`;
+  if(dia.metas&&dia.metas.length)metasHtml+=dia.metas.map(m=>`<div class="cron-topico">${m}</div>`).join('');
+  metasHtml+=`<div style="margin-top:12px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--kh3);margin-bottom:6px;">ATIVIDADES</div>`;
+  if(dia.atividades&&dia.atividades.length)metasHtml+=dia.atividades.map(a=>`<div style="font-size:12px;color:var(--cr2);padding:3px 0 3px 14px;position:relative;line-height:1.55;"><span style="position:absolute;left:0;color:var(--ol4);">•</span>${a}</div>`).join('');
+  document.getElementById('cron-metas').innerHTML=metasHtml;
+  if(done)document.getElementById('cron-metas').style.opacity='0.5';
+  else document.getElementById('cron-metas').style.opacity='1';
+  // Materiais
+  let matHtml='';
+  if(dia.resumo)matHtml+=`<div class="cron-mat-card"><div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--kh3);margin-bottom:8px;">RESUMO DO CONTEÚDO</div><div style="font-size:12px;color:var(--cr2);line-height:1.7;">${dia.resumo.replace(/\n/g,'<br>')}</div></div>`;
+  if(dia.topicos&&dia.topicos.length)matHtml+=`<div class="cron-mat-card"><div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--kh3);margin-bottom:8px;">TÓPICOS</div>${dia.topicos.map(t=>`<div class="cron-topico">${t}</div>`).join('')}</div>`;
+  document.getElementById('cron-materiais').innerHTML=matHtml;
+  // Progresso
+  const total=cronDias.length;
+  const concluidos=Object.keys(cs.concluidos||{}).filter(k=>cs.concluidos[k]).length;
+  const pct=Math.round(concluidos/total*100);
+  document.getElementById('cron-progresso').innerHTML=`<div class="section-label">PROGRESSO: ${concluidos}/${total} DIAS (${pct}%)</div><div class="cron-prog-bar"><div class="cron-prog-fill" style="width:${pct}%"></div></div>`;
+  document.getElementById('cron-streak-tb').textContent=concluidos>0?concluidos+' ✅':'';
+}
+
+function gerarTxtDia(){
+  if(!cronDias.length)return;
+  const dia=cronDias[cronIdx];const cs=getCronStorage();
+  let t='COMBATENTE APROVADO — CRONOGRAMA DE ESTUDOS\n'+'═'.repeat(44)+'\n\n';
+  t+=(dia.titulo||'DIA '+(cronIdx+1)).toUpperCase()+'\n';
+  if(dia.materia)t+='Matéria: '+dia.materia+'\n';
+  t+='\n── METAS DO DIA ──\n';
+  if(dia.metas)dia.metas.forEach(m=>{t+='  ▸ '+m+'\n';});
+  t+='\n── ATIVIDADES ──\n';
+  if(dia.atividades)dia.atividades.forEach(a=>{t+='  • '+a+'\n';});
+  t+='\n── TÓPICOS ──\n';
+  if(dia.topicos)dia.topicos.forEach(tp=>{t+='  ▸ '+tp+'\n';});
+  if(dia.resumo)t+='\n── RESUMO ──\n'+dia.resumo+'\n';
+  t+='\n'+'═'.repeat(44)+'\nGerado por Combatente Aprovado • '+new Date().toLocaleDateString('pt-BR');
+  downloadTxt(t,'dia-'+(cronIdx+1)+'.txt');
+}
+
+function gerarTxtCompleto(){
+  if(!cronDias.length)return;
+  const cs=getCronStorage();
+  let t='COMBATENTE APROVADO — CRONOGRAMA COMPLETO\n'+'═'.repeat(44)+'\n';
+  t+='Concurso: '+(cs.concurso||'—')+' | '+cronDias.length+' dias | '+cs.horas+'h/dia\n\n';
+  cronDias.forEach((dia,i)=>{
+    t+='─'.repeat(36)+'\n'+(dia.titulo||'DIA '+(i+1)).toUpperCase()+'\n';
+    if(dia.materia)t+='Matéria: '+dia.materia+'\n';
+    t+='\nMetas:\n';if(dia.metas)dia.metas.forEach(m=>{t+='  ▸ '+m+'\n';});
+    t+='\nAtividades:\n';if(dia.atividades)dia.atividades.forEach(a=>{t+='  • '+a+'\n';});
+    t+='\nTópicos:\n';if(dia.topicos)dia.topicos.forEach(tp=>{t+='  ▸ '+tp+'\n';});
+    if(dia.resumo)t+='\nResumo:\n'+dia.resumo+'\n';
+    t+='\n';
+  });
+  t+='═'.repeat(44)+'\nGerado por Combatente Aprovado • '+new Date().toLocaleDateString('pt-BR');
+  downloadTxt(t,'cronograma-completo.txt');
+}
+
+function downloadTxt(texto,nome){
+  const blob=new Blob([texto],{type:'text/plain;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=nome;
+  document.body.appendChild(a);a.click();
+  document.body.removeChild(a);URL.revokeObjectURL(url);
+}
+
+// INIT
+updateHomeStats();
+</script>
+</body>
+</html>
